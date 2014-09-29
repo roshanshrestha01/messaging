@@ -1,4 +1,13 @@
 {% extends "base.html" %}
+{% block extra_head %}
+	<link rel="stylesheet" href="{{ STATIC_URL }}js/dist/css/selectize.bootstrap2.css" />
+	<link rel="stylesheet" href="{{ STATIC_URL }}js/dist/css/selectize.bootstrap3.css" />
+	<link rel="stylesheet" href="{{ STATIC_URL }}js/dist/css/selectize.css" />
+	<link rel="stylesheet" href="{{ STATIC_URL }}js/dist/css/selectize.default.css" />
+	<link rel="stylesheet" href="{{ STATIC_URL }}js/dist/css/selectize.legacy.css" />
+
+{% endblock %}
+
 {% block content %}
 <form action="/message/compose/" method="post">
 {% csrf_token %}
@@ -8,4 +17,19 @@
 <tr><td></td><td><input type="submit" value="Submit"></td></tr>
 </table>
 </form>
+{% endblock %}
+
+{% block extra_script %}
+<script type="text/javascript" src="{{ STATIC_URL }}js/dist/js/standalone/selectize.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}js/dist/js/standalone/selectize.min.js"></script>
+<script>
+	$(document).ready(function(){
+		$('#id_user_recieiver').selectize({
+ 			plugins: ['remove_button']
+			});
+		$('#id_group_receiver').selectize({
+ 			plugins: ['remove_button']
+			});
+	});	
+</script>
 {% endblock %}
