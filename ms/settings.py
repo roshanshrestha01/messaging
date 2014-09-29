@@ -12,7 +12,7 @@ https://docs.djangoproject.com/en/1.7/ref/settings/
 import os
 import locale_settings
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
-
+MS_ROOT = os.path.dirname(os.path.realpath(__file__))
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.7/howto/deployment/checklist/
@@ -27,8 +27,13 @@ TEMPLATE_DEBUG = True
 
 ALLOWED_HOSTS = []
 
-
+STATICFILES_DIRS = (
+    os.path.join(MS_ROOT, '..', 'static'),
+)
 # Application definition
+TEMPLATE_DIRS = (
+    os.path.join(MS_ROOT, '..', 'templates'),
+)
 
 INSTALLED_APPS = (
     'django.contrib.admin',
