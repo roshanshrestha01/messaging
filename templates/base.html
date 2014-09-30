@@ -5,6 +5,8 @@
 		<link rel="stylesheet" href="{{ STATIC_URL }}css/foundation.css" />
 		<link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}css/foundation.min.css"/>
 		<link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}css/normalize.css"/>
+		<script type="text/javascript" src="{{ STATIC_URL }}js/jquery.js"></script>
+		<script type="text/javascript" src="{{ STATIC_URL }}js/knockout-3.2.0.js"></script>
 		{% block extra_head %}{% endblock %}
 	</head>
 	<body>
@@ -20,8 +22,6 @@
 		{% endblock %}
 		
 		{% block script %}
-		<script type="text/javascript" src="{{ STATIC_URL }}js/knockout.js"></script>
-		<script type="text/javascript" src="{{ STATIC_URL }}js/jquery.js"></script>
 			{% block extra_script %}{% endblock %}
 		{% endblock %}
 		

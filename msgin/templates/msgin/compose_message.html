@@ -5,6 +5,8 @@
 	<link rel="stylesheet" href="{{ STATIC_URL }}js/dist/css/selectize.css" />
 	<link rel="stylesheet" href="{{ STATIC_URL }}js/dist/css/selectize.default.css" />
 	<link rel="stylesheet" href="{{ STATIC_URL }}js/dist/css/selectize.legacy.css" />
+	<link rel="stylesheet" href="{{ STATIC_URL }}js/dist/css/jquery.datetimepicker.css" />
+
 <style>
 table tr:nth-child(5)
 {
@@ -23,7 +25,7 @@ table tr:nth-child(5)
 </tr>
 {{form.as_table}}
 
-<tr><td></td><td><input type="submit" value="Submit"></td></tr>
+<tr><td></td><td><input id="submit" type="submit" value="Submit"></td></tr>
 </table>
 </form>
 {% endblock %}
@@ -31,7 +33,12 @@ table tr:nth-child(5)
 {% block extra_script %}
 <script type="text/javascript" src="{{ STATIC_URL }}js/dist/js/standalone/selectize.js"></script>
 <script type="text/javascript" src="{{ STATIC_URL }}js/dist/js/standalone/selectize.min.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}js/dist/jquery.datetimepicker.js"></script>
+
 <script>
+	$('#id_send_time_0').datetimepicker();
+	$('#id_send_time_1').datetimepicker();
+
 	$(document).ready(function(){
 		$('#id_user_receiver').selectize({
  			plugins: ['remove_button']
@@ -45,10 +52,13 @@ table tr:nth-child(5)
         	if($(this).is(':checked'))
     			{
         	    $('table tr:nth-child(5)').fadeIn();
+        	    // $('#submit').val('Save');
         		}
         	else
             	{
             	$('table tr:nth-child(5)').css('display','none');
+        	    // $('#submit').val('Submit');
+
     			}
    			});
 	});	
