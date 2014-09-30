@@ -15,8 +15,11 @@ BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
 MS_ROOT = os.path.dirname(os.path.realpath(__file__))
 
+<<<<<<< HEAD
 
 
+=======
+>>>>>>> c599dd9c3e8ebe65d49a6c3b975b14258811d605
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.7/howto/deployment/checklist/
 
