@@ -12,7 +12,13 @@ https://docs.djangoproject.com/en/1.7/ref/settings/
 import os
 import celeryconf
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
+<<<<<<< HEAD
 MS_ROOT = os.path.dirname(os.path.realpath(__file__))
+=======
+
+MS_ROOT = os.path.dirname(os.path.realpath(__file__))
+
+>>>>>>> 48b8d370402855654c5d1b2cabe8ada4038b807a
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.7/howto/deployment/checklist/
