@@ -42,7 +42,8 @@ def compose(request):
 				current_tz_time = current_time.astimezone(current_tz)
 				waiting_time = send_status.send_time - current_tz_time
 				waiting_time_in_seconds = waiting_time.seconds
-				scheduled_message.apply_async(message_id, queue='lopri', countdown=waiting_time_in_seconds)
+				scheduled_message.delay(message_id,waiting_time_in_seconds)
+				#scheduled_message.apply_async((message_id,),queue='lopri', countdown=waiting_time_in_seconds)
 				#pdb.set_trace()
 				
 
