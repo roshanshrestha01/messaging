@@ -13,6 +13,7 @@ class ComposeMessageForm(forms.Form):
 	user_receivers=forms.MultipleChoiceField(user_choice,required=False)
 	group_receivers=forms.MultipleChoiceField(group_choice,required=False)
 	message=forms.CharField(widget=forms.Textarea())
+	scheduled = forms.BooleanField(required=False)
 	scheduled_time=forms.DateTimeField(required=False)
 
 
