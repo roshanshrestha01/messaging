@@ -58,7 +58,9 @@ def compose(request):
 	return render(request,'msgin/compose_message.html',context)
 
 def inbox(request):
-	pass
+
+
+	return HttpResponse('This is inbox bro')
 
 def send(request):
 	pass
