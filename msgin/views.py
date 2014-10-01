@@ -13,7 +13,8 @@ class ComposeMessageForm(forms.Form):
 	user_receivers=forms.MultipleChoiceField(user_choice,required=False)
 	group_receivers=forms.MultipleChoiceField(group_choice,required=False)
 	message=forms.CharField(widget=forms.Textarea())
-	scheduled_time=forms.DateTimeField(required=False)
+	schedule=forms.BooleanField(required=False)
+	scheduled_time=forms.DateTimeField(required=False, widget=forms.SplitDateTimeWidget())
 
 
 def index(request):
@@ -24,7 +25,6 @@ def compose(request):
 	if request.method == 'POST':
 		form = ComposeMessageForm(request.POST)
 		#if form.is_valid() and form.cleaned_data['send_time'] = None:
-		pdb.set_trace()
 		if form.is_valid():
 			scheduled = False
 			send_by = request.user
@@ -39,8 +39,9 @@ def compose(request):
 				scheduled=True
 			new_message=Message(sender=send_by, message_content=message_c, send_time=s_time, status=stat)
 			new_message.save()
-			new_message.group_receiver.add(g_receiver)
-			new_message.user_receiver.add(u_receiver)
+			#pdb.set_trace()
+			new_message.group_receiver.add(*g_receiver)
+			new_message.user_receiver.add(*u_receiver)
 			if scheduled:
 				message_id = new_message.id
 				current_tz = timezone.get_current_timezone()
@@ -51,15 +52,10 @@ def compose(request):
 				scheduled_message.delay(message_id,waiting_time_in_seconds)
 				#scheduled_message.apply_async((message_id,),queue='lopri', countdown=waiting_time_in_seconds)
 			return HttpResponseRedirect('/message/')
-				
-
-		'''else:
-			form.save(commit=False)'''
-
 	else:
 		form = ComposeMessageForm()
-		context = {'form':form}
-		return render(request,'msgin/compose_message.html',context)
+	context = {'form':form}
+	return render(request,'msgin/compose_message.html',context)
 
 def inbox(request):
 	pass
