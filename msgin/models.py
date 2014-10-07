@@ -18,7 +18,7 @@ class Message(models.Model):
     MESSAGE_STATUS = (
         ('OUTBOX', 'Outbox'), ('SEND', 'Send'), ('SEEN', 'Received'))
     status = models.CharField(max_length=6, choices=MESSAGE_STATUS)
-    date = models.DateTimeField('Date')
+    created_at = models.DateTimeField('Created At')
 
     def __unicode__(self):
         return self.status

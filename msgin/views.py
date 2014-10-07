@@ -41,7 +41,7 @@ def compose(request):
             g_receiver = form.cleaned_data['group_receivers']
             message_c = form.cleaned_data['message']
             s_time = form.cleaned_data['scheduled_time']
-            today_date = datetime.date.today()
+            created_at = datetime.date.today()
             if s_time is None:
                 stat = 'SEND'
             else:
@@ -52,7 +52,7 @@ def compose(request):
                 message_content=message_c,
                 send_time=s_time,
                 status=stat,
-                date=today_date)
+                created_at=created_at)
             new_message.save()
             # pdb.set_trace()
             new_message.group_receiver.add(*g_receiver)
