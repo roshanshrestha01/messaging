@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block content %}
+{% for o in obj %}
+
+<div class="row">
+	<div class="small-12 column">
+		<label><a href="#"> ^_^ {{ o.sender }} {% for group_receiv in o.group_receiver.all %}
+		{{ group_receiv }}
+		{% endfor %}</a>
+		</label>
+		<b>{{ o.message_content }}</b>
+		<hr>
+	</div>
+</div>
+ {% endfor %}
+{% endblock %}
+
+<!-- 	
+		{{ o.status }}
+		{% for user_receiv in o.user_receiver.all %}
+		{{ user_receiv }}
+		{% endfor %}
+		{% for group_receiv in o.group_receiver.all %}
+		{{ group_receiv }}
+		{% endfor %}
+ -->

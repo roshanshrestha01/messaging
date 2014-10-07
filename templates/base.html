@@ -7,21 +7,47 @@
 		<link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}css/normalize.css"/>
 		<script type="text/javascript" src="{{ STATIC_URL }}js/jquery.js"></script>
 		<script type="text/javascript" src="{{ STATIC_URL }}js/knockout-3.2.0.js"></script>
+
 		{% block extra_head %}{% endblock %}
 	</head>
 	<body>
 		{% endblock %}
-		<ul class="breadcrumbs">
-			<!-- <li><a href="/message/">Home</a></li> -->
-			<li><a href="/message/compose/">Compose</a></li>
-			<li><a href="/message/send/">Send</a></li>
-			<li><a href="/message/inbox/">Inbox</a></li>
-			<li><a href="/message/outbox/">Outbox</a></li>
-		</ul>
-		{% block content %}
-		{% endblock %}
-		
+		<div class = "row">
+			<div class = "small-12 column">
+				<ul class="breadcrumbs">
+					<li><a href="/message/compose/">Compose</a></li>
+					<li><a href="/message/send/">Send</a></li>
+					<li><a href="/message/inbox/">Inbox</a></li>
+					<li><a href="/message/outbox/">Outbox</a></li>
+				</ul>
+<!--             <nav class="top-bar" data-topbar role="navigation">
+                    <section class="top-bar-section">
+ -->                        <!-- Right Nav Section -->
+<!--                         <ul class="right"> 
+                            <li>
+                                <a class="right-off-canvas-toggle menu-icon"></a>
+                            </li>
+                        </ul>
+ -->                            <!-- Left Nav Section -->
+<!--                         <ul class="left">
+                            <li><a href="/message/compose/">Compose</a></li>
+                            <li><a href="/message/send/">Send</a></li>
+                            <li><a href="/message/inbox/">Inbox</a></li>
+                            <li><a href="/message/outbox/">Outbox</a></li>
+                        </ul>
+                    </section>
+                </nav>
+ -->            </div>
+        </div>
+        {% block content %}
+        {% endblock %}
+
 		{% block script %}
+		<script type="text/javascript" src="{{ STATIC_URL }}js/foundation.min.js"></script>
+		<script>
+    		$(document).foundation();
+  		</script>
+
 			{% block extra_script %}{% endblock %}
 		{% endblock %}
 		
