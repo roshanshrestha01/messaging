@@ -41,7 +41,7 @@ def compose(request):
             g_receiver = form.cleaned_data['group_receivers']
             message_c = form.cleaned_data['message']
             s_time = form.cleaned_data['scheduled_time']
-            created_at = datetime.date.today()
+            create_at = datetime.date.today()
             if s_time is None:
                 stat = 'SEND'
             else:
@@ -52,7 +52,7 @@ def compose(request):
                 message_content=message_c,
                 send_time=s_time,
                 status=stat,
-                created_at=created_at)
+                created_at=create_at)
             new_message.save()
             # pdb.set_trace()
             new_message.group_receiver.add(*g_receiver)
@@ -75,7 +75,7 @@ def compose(request):
 def inbox(request):
     group_name = request.user.groups.all()
     obj = Message.objects.filter(Q(user_receiver=request.user) | Q(
-        group_receiver=group_name), status="SEND").order_by('-date')
+        group_receiver=group_name), status="SEND").order_by('-created_at')
     return render(request, 'msgin/inbox.html', {'obj': obj})
 
 
