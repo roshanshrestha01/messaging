@@ -13,14 +13,42 @@
 	</div>
 </div>
  {% endfor %}
-{% endblock %}
 
-<!-- 	
-		{{ o.status }}
-		{% for user_receiv in o.user_receiver.all %}
-		{{ user_receiv }}
-		{% endfor %}
-		{% for group_receiv in o.group_receiver.all %}
-		{{ group_receiv }}
-		{% endfor %}
- -->
+<div class="pagination-centered">
+    <span class="step-links">
+        {% if obj.has_previous %}
+            <a href="?page={{ obj.previous_page_number }}">previous</a>
+        {% endif %}
+
+        <span class="current">
+            Page {{ obj.number }} of {{ obj.paginator.num_pages }}.
+        </span>
+
+        {% if obj.has_next %}
+            <a href="?page={{ obj.next_page_number }}">next</a>
+        {% endif %}
+    </span>
+	<ul class="pagination">
+		{% if obj.has_previous %}
+		<li class="arrow unavailable"><a href="?page={{ obj.previous_page_number }}">&laquo;</a></li>
+		<li><a href="?page={{ obj.previous_page_number }}">{{ obj.previous_page_number }}</a></li>
+		{% endif %}
+
+		<li class="current"><a href="">{{ obj.number }}</a></li>
+
+		{% if obj.has_next %}
+		<li><a href="?page={{ obj.next_page_number }}">{{ obj.next_page_number }}</a></li>
+		<li class="arrow"><a href="?page={{ obj.next_page_number }}">&raquo;</a></li>
+		{% endif %}
+	</ul>
+</div>
+
+	<!--ul class="pagination">
+		<li class="arrow unavailable"><a href="">&laquo;</a></li>
+		<li class="current"><a href="">1</a></li>
+		<li><a href="">2</a></li> <li><a href="">3</a></li>
+		<li class="unavailable"><a href="">&hellip;</a></li>
+		<li class="arrow"><a href="">&raquo;</a>
+		</li>
+		</ul-->
+{% endblock %}
