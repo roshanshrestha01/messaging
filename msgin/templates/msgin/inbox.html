@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% block content %}
-{% for o in obj %}
+{% for o in obj.object_list %}
 
 <div class="row">
 	<div class="small-12 column">
@@ -13,8 +13,11 @@
 	</div>
 </div>
  {% endfor %}
-
 <div class="pagination-centered">
+    {{ obj.render }}
+</div>	
+
+<!--div class="pagination-centered">
     <span class="step-links">
         {% if obj.has_previous %}
             <a href="?page={{ obj.previous_page_number }}">previous</a>
@@ -23,7 +26,7 @@
         <span class="current">
             Page {{ obj.number }} of {{ obj.paginator.num_pages }}.
         </span>
-
+	
         {% if obj.has_next %}
             <a href="?page={{ obj.next_page_number }}">next</a>
         {% endif %}
@@ -41,7 +44,7 @@
 		<li class="arrow"><a href="?page={{ obj.next_page_number }}">&raquo;</a></li>
 		{% endif %}
 	</ul>
-</div>
+</div-->
 
 	<!--ul class="pagination">
 		<li class="arrow unavailable"><a href="">&laquo;</a></li>
