@@ -8,7 +8,6 @@ from msgin.tasks import scheduled_message
 from django.db.models import Q
 import datetime
 # from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
-from pure_pagination import Paginator, PageNotAnInteger
 
 
 class ComposeMessageForm(forms.Form):
@@ -77,23 +76,8 @@ def compose(request):
 def inbox(request):
     group_name = request.user.groups.all()
     obj = Message.objects.filter(Q(user_receiver=request.user) | Q(
-        group_receiver=group_name), status="SEND").order_by("-created_at")
-    paginator = Paginator(obj, 3)
-
-    try:
-        page = request.GET.get('page')
-    except PageNotAnInteger:
-        page = 1
-
-    obj_page = paginator.page(page)
-
-    # try:
-    #     obj_page = paginator.page(page)
-    # except PageNotAnInteger:
-    #     obj_page = paginator.page(1)
-    # except EmptyPage:
-    #     obj_page = paginator.page(paginator.num_pages)
-    return render(request, 'msgin/inbox.html', {'obj': obj_page})
+        group_receiver=group_name), status="SEND")
+    return render(request, 'msgin/inbox.html', {'obj': obj})
 
 
 def send(request):
