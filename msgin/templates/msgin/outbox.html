@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block content %}
+{% for o in obj %}
+
+<div class="row">
+	<div class="small-12 column">
+		<label><a href="#"> ^_^ {{ o.sender }}</a><label><i>Scheduled Time:</i> {{ o.send_time }}</label></label>
+		<b>{{ o.message_content }}</b>
+		<hr>
+	</div>
+</div>
+ {% endfor %}
+{% endblock %}

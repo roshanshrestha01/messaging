@@ -5,53 +5,124 @@
 	<link rel="stylesheet" href="{{ STATIC_URL }}js/dist/css/selectize.css" />
 	<link rel="stylesheet" href="{{ STATIC_URL }}js/dist/css/selectize.default.css" />
 	<link rel="stylesheet" href="{{ STATIC_URL }}js/dist/css/selectize.legacy.css" />
-<style>
-table tr:nth-child(5)
-{
-	display: none;
-}
-</style>
+	<link rel="stylesheet" href="{{ STATIC_URL }}js/dist/css/jquery.datetimepicker.css" />
+
 {% endblock %}
 
 {% block content %}
+
 <form action="/message/compose/" method="post">
 {% csrf_token %}
-<table>
-<tr>
-	<td><input type="checkbox" value="schedule" id="schedule"> Schedule Date</td>
-	<td></td>
-</tr>
-{{form.as_table}}
+	<!--div class = "row">
+		<div class = "small-1 column">
+			<label>{{ form.date.label }}:
+			</label>
+		</div>
+		<div class = "small-5 column">
+			{{ form.date }}
+		</div>
+		<div class = "small-6 column">
+		</div-->
 
-<tr><td></td><td><input type="submit" value="Submit"></td></tr>
-</table>
+	</div>
+
+	<div class = "row">
+		<div class = "small-6 column">
+			<label>{{ form.user_receivers.label }}:
+			{{ form.user_receivers }}
+			</label>
+		</div>
+		<div class = "small-6 column">
+			<label>{{ form.group_receivers.label }}:
+			{{ form.group_receivers }}
+			</label>
+		</div>
+	</div>
+		
+	<div class = "row">
+		<div class = "small-12 column">
+			<label>{{ form.message.label }}:
+			{{ form.message }}
+			</label>
+		</div>
+	</div>
+	
+	<div class = "row">
+		<div class = "small-2 column">
+			<label>{{ form.schedule.label }}:</label>
+			{{ form.schedule }}
+		</div>
+	</div>
+		<div class="row">
+					<div class="small-3 column">
+						<label data-bind="visible:tog">{{ form.scheduled_time.label }}:</label>
+					</div>
+					<div class="small-9 column">
+						<p data-bind="visible:tog">{{ form.scheduled_time }}</p>
+					</div>
+				</div>
+			</div>
+		</div>
+	<div class = "row">
+		<div class = "small-12 column">
+			<input id="submit" type="submit" value="Save" data-bind="value: change_button_value">
+		</div>
+		
+	</div>
 </form>
+
 {% endblock %}
 
 {% block extra_script %}
 <script type="text/javascript" src="{{ STATIC_URL }}js/dist/js/standalone/selectize.js"></script>
 <script type="text/javascript" src="{{ STATIC_URL }}js/dist/js/standalone/selectize.min.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}js/dist/jquery.datetimepicker.js"></script>
+
 <script>
+	$('#id_scheduled_time_0').datetimepicker({
+		timepicker:false,
+ 		format:'d/m/Y'
+	});
+	$('#id_date').datetimepicker({
+		timepicker:false,
+ 		format:'d/m/Y'
+	});
+
+	$('#id_scheduled_time_1').datetimepicker({
+		datepicker:false,
+		format:'H:i'
+	});
+
 	$(document).ready(function(){
-		$('#id_user_receiver').selectize({
+		$('#id_user_receivers').selectize({
  			plugins: ['remove_button']
 			});
 
-		$('#id_group_receiver').selectize({
+		$('#id_group_receivers').selectize({
  			plugins: ['remove_button']
 			});
-
-		$('#schedule').click(function() {
-        	if($(this).is(':checked'))
-    			{
-        	    $('table tr:nth-child(5)').fadeIn();
-        		}
-        	else
-            	{
-            	$('table tr:nth-child(5)').css('display','none');
-    			}
-   			});
 	});	
+	Toggle = function(){
+		var self = this;
+		self.tog = ko.observable(false);
+		self.change_button_value = ko.observable('Submit')
+		self.submit_save = function(data,event){
+			if(self.tog()==true){
+				self.change_button_value('Save');
+				console.log(event.target.checked); // log out the current state
+       			console.log("1");
+       			return true;
+			} else {
+				self.change_button_value('Submit');
+				console.log(event.target.checked); // log out the current state
+       			console.log("1");
+       			return true; 
+			}
+		};
+	};
+
+	toggle = new Toggle();
+	ko.applyBindings(toggle);
 
 </script>
 {% endblock %}
