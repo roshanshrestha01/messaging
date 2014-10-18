@@ -81,7 +81,8 @@ def inbox(request):
 
 
 def send(request):
-    pass
+    obj = Message.objects.filter(sender=request.user, status="SEND")
+    return render(request, "msgin/sent.html", {'obj': obj})
 
 
 def outbox(request):
