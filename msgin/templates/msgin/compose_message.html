@@ -16,7 +16,7 @@ table tr:nth-child(5)
 {% block content %}
 
 {% if message_id %}
-	<form action="/message/compose/{{ message_id }}/" method="post">
+	<form action="/message/{{ message_id }}/" method="post">
 {% else %}
 	<form action="/message/compose/" method="post">
 {% endif %}

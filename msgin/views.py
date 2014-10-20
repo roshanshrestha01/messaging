@@ -3,12 +3,9 @@ from django.http import HttpResponse, HttpResponseRedirect
 from msgin.models import Message, User, Group
 from django.utils import timezone
 from django import forms
-#from django.forms import ModelForm
 from msgin.tasks import scheduled_message
 from msgin.celery import app
 import re
-#import pdb
-# add one blank line
 
 
 class ComposeMessageForm(forms.Form):
@@ -42,21 +39,18 @@ def get_task_id(ms_id):
     i = app.control.inspect()
     sch_ms = i.scheduled()
     sch_ms_list = sch_ms['celery@localhost.localdomain']
-    # li=[]
     for l in range(len(sch_ms_list)):
         smt = sch_ms_list[l]['request']['args']
         if int(ms_id) == int(re.findall(r'\d*\w', smt)[0]):
             task_id = sch_ms_list[l]['request']['id']
-    # pdb.set_trace()
     return task_id
 
 
 def index(request):
     return render(request, 'msgin/index.html')
-    # return HttpResponse('Here will be compose and inbox')
 
 
-def compose(request, msg_id):
+def compose(request, msg_id=None):
     if msg_id is not None:
         edit = True
     else:
@@ -94,20 +88,17 @@ def compose(request, msg_id):
             new_message.user_receiver.add(*u_receiver)
             if scheduled:
                 message_id = new_message.id
-
-                # Inspecting scheduled message
-
-                # pdb.set_trace()
                 scheduled_message.apply_async(
                     (message_id,), countdown=get_waiting_time_sec(
                         new_message.send_time))
-                # delete the task here
             return HttpResponseRedirect('/message/')
     else:
         if edit:
             e_message = Message.objects.get(id=msg_id)
-            data = {'user_receivers': get_related_list(e_message.user_receiver.all()),
-                    'group_receivers': get_related_list(e_message.group_receiver.all()),
+            data = {'user_receivers': get_related_list(
+                        e_message.user_receiver.all()),
+                    'group_receivers': get_related_list(
+                        e_message.group_receiver.all()),
                     'message': e_message.message_content,
                     'scheduled_time': e_message.send_time,
                     }
@@ -129,18 +120,3 @@ def send(request):
 
 def outbox(request):
     pass
-
-
-def edit_message(request, message_id):
-    if request.method == 'POST':
-        pass
-    else:
-        e_message = Message.objects.get(id=message_id)
-        data = {'user_receivers': get_related_list(e_message.user_receiver.all()),
-                'group_receivers': get_related_list(e_message.group_receiver.all()),
-                'message': e_message.message_content,
-                'scheduled_time': e_message.send_time,
-                }
-        form = ComposeMessageForm(data)
-    context = {'form': form, 'message_id': message_id}
-    return render(request, 'msgin/compose_message.html', context)
