@@ -14,7 +14,13 @@ table tr:nth-child(5)
 {% endblock %}
 
 {% block content %}
-<form action="/message/compose/" method="post">
+
+{% if message_id %}
+	<form action="/message/compose/{{ message_id }}/" method="post">
+{% else %}
+	<form action="/message/compose/" method="post">
+{% endif %}
+
 {% csrf_token %}
 <table>
 <tr>
