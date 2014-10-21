@@ -4,7 +4,15 @@
 
 <div class="row">
 	<div class="small-12 column">
-		<label><a href="#"> ^_^ {{ o.sender }}</a><label><i>Scheduled Time:</i> {{ o.send_time }}</label></label>
+		<label><a href="#"> 
+				^_^ {% for user_receiv in o.user_receiver.all %}
+					{{ user_receiv }},
+					{% endfor %}</a>
+
+					{% for group_receiv in o.group_receiver.all %}
+					{{ group_receiv }}
+					{% endfor %}</a>
+					<label><i>Scheduled Time:</i> {{ o.send_time }}</label></label>
 		<b>{{ o.message_content }}</b>
 		<hr>
 	</div>
