@@ -14,5 +14,9 @@ urlpatterns = patterns('',
                        url(r'^outbox/$', views.outbox, name='outbox'),
                        url(r'^outbox/(?P<user_id>\d+)/$',
                            views.messages_by_user,
-                           name='outbox'),
+                           name='user_sepecify'),
+                       url(r'^outbox/grp/(?P<group_id>\d+)/$',
+                           views.messages_by_group,
+                           name='grp_sepecify'),
+
                        )

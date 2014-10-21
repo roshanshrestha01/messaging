@@ -102,12 +102,12 @@ def compose(request, msg_id=None):
         if edit:
             e_message = Message.objects.get(id=msg_id)
             data = {'user_receivers': get_related_list(
-                        e_message.user_receiver.all()),
-                    'group_receivers': get_related_list(
-                        e_message.group_receiver.all()),
-                    'message': e_message.message_content,
-                    'scheduled_time': e_message.send_time,
-                    }
+                e_message.user_receiver.all()),
+                'group_receivers': get_related_list(
+                e_message.group_receiver.all()),
+                'message': e_message.message_content,
+                'scheduled_time': e_message.send_time,
+            }
             form = ComposeMessageForm(data)
         else:
             form = ComposeMessageForm()
@@ -133,6 +133,18 @@ def outbox(request):
 
 
 def messages_by_user(request, user_id):
-    obj = Message.objects.filter(sender=request.user, user_receiver_id=user_id)
+    get_user = User.objects.get(id=user_id)
+    obj = Message.objects.filter(
+        sender=request.user,
+        user_receiver=get_user,
+        status="OUTBOX")
     return render(request, "msgin/outbox.html", {'obj': obj})
 
+
+def messages_by_group(request, group_id):
+    get_group = Group.objects.get(id=group_id)
+    obj = Message.objects.filter(
+        sender=request.user,
+        group_receiver=get_group,
+        status="OUTBOX")
+    return render(request, "msgin/outbox.html", {'obj': obj})
