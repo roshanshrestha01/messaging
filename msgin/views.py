@@ -1,11 +1,12 @@
 from django.shortcuts import render
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponseRedirect
 from msgin.models import Message, User, Group
 from django.utils import timezone
 from django import forms
 from msgin.tasks import scheduled_message
 from msgin.celery import app
 import re
+from django.db.models import Q
 
 
 class ComposeMessageForm(forms.Form):
@@ -14,7 +15,11 @@ class ComposeMessageForm(forms.Form):
     user_receivers = forms.MultipleChoiceField(user_choice, required=False)
     group_receivers = forms.MultipleChoiceField(group_choice, required=False)
     message = forms.CharField(widget=forms.Textarea())
-    schedule = forms.BooleanField(required=False)
+    schedule = forms.BooleanField(
+        required=False,
+        widget=forms.CheckboxInput(
+            attrs={
+                'data-bind': 'checked:tog, click:submit_save'}))
     scheduled_time = forms.DateTimeField(
         required=False,
         widget=forms.SplitDateTimeWidget())
@@ -57,6 +62,7 @@ def compose(request, msg_id=None):
         edit = False
     if request.method == 'POST':
         form = ComposeMessageForm(request.POST)
+
         if form.is_valid():
             scheduled = False
             send_by = request.user
@@ -66,7 +72,6 @@ def compose(request, msg_id=None):
             s_time = form.cleaned_data['scheduled_time']
             if s_time is None:
                 stat = 'SEND'
-                # Delete here the task while edit
             else:
                 stat = 'OUTBOX'
                 scheduled = True
@@ -83,6 +88,7 @@ def compose(request, msg_id=None):
             new_message.message_content = message_c
             new_message.send_time = s_time
             new_message.status = stat
+            new_message.created_at = timezone.now()
             new_message.save()
             new_message.group_receiver.add(*g_receiver)
             new_message.user_receiver.add(*u_receiver)
@@ -110,13 +116,23 @@ def compose(request, msg_id=None):
 
 
 def inbox(request):
-
-    return HttpResponse('This is inbox bro')
+    group_name = request.user.groups.all()
+    obj = Message.objects.filter(Q(user_receiver=request.user) | Q(
+        group_receiver=group_name), status="SEND")
+    return render(request, 'msgin/inbox.html', {'obj': obj})
 
 
 def send(request):
-    pass
+    obj = Message.objects.filter(sender=request.user, status="SEND")
+    return render(request, "msgin/sent.html", {'obj': obj})
 
 
 def outbox(request):
-    pass
+    obj = Message.objects.filter(sender=request.user, status="OUTBOX")
+    return render(request, "msgin/outbox.html", {'obj': obj})
+
+
+def messages_by_user(request, user_id):
+    obj = Message.objects.filter(sender=request.user, user_receiver_id=user_id)
+    return render(request, "msgin/outbox.html", {'obj': obj})
+

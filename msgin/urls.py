@@ -12,4 +12,7 @@ urlpatterns = patterns('',
                        url(r'^inbox/$', views.inbox, name='inbox'),
                        url(r'^send/$', views.send, name='send'),
                        url(r'^outbox/$', views.outbox, name='outbox'),
+                       url(r'^outbox/(?P<user_id>\d+)/$',
+                           views.messages_by_user,
+                           name='outbox'),
                        )
