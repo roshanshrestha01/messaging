@@ -5,14 +5,15 @@
 <div class="row">
 	<div class="small-12 column">
 		<label>^_^{% for user_receiv in o.user_receiver.all %}
-				<a href="/message/outbox/{{ user_receiv.id }}"> {{ user_receiv }},</a>
-				{% endfor %}</a>
+				<a href="/message/outbox/usr/{{ user_receiv.id }}"> {{ user_receiv }},</a>
+				{% endfor %}
 		<label>^_^{% for grp_receiv in o.group_receiver.all %}
 				<a href="/message/outbox/grp/{{ grp_receiv.id }}"> {{ grp_receiv }},</a>
-				{% endfor %}</a>
+				{% endfor %}
 
 				<label><i>Scheduled Time:</i> {{ o.send_time }}</label></label>
 		<b>{{ o.message_content }}</b>
+		<a href="/message/{{ o.id }}">Edit</a>
 		<hr>
 	</div>
 </div>

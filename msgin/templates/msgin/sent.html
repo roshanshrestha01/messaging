@@ -18,15 +18,15 @@
 					{{ o.sender }}
 				</a>
 				<br/>
-				{% for usr_receiver in o.user_receiver.all %}
 				To:
-				<a href="#">
+				{% for usr_receiver in o.user_receiver.all %}
+				<a href="/message/sent/usr/{{ usr_receiver.id }}">
 					{{ usr_receiver }}
 				</a>
 				{% endfor %}
-				{% for grp_receiver in o.group_receiver.all %}
 				Group:
-				<a href="#">
+				{% for grp_receiver in o.group_receiver.all %}
+				<a href="/message/sent/grp/{{ grp_receiver.id }}">
 					{{ grp_receiver }}
 				</a>
 				{% endfor %}

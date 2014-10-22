@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from django.http import HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect
 from msgin.models import Message, User, Group
 from django.utils import timezone
 from django import forms
@@ -7,6 +7,7 @@ from msgin.tasks import scheduled_message
 from msgin.celery import app
 import re
 from django.db.models import Q
+import pdb
 
 
 class ComposeMessageForm(forms.Form):
@@ -21,8 +22,18 @@ class ComposeMessageForm(forms.Form):
             attrs={
                 'data-bind': 'checked:tog, click:submit_save'}))
     scheduled_time = forms.DateTimeField(
-        required=False,
-        widget=forms.SplitDateTimeWidget())
+        required=False)
+
+    def clean(self):
+        cleaned_data = super(ComposeMessageForm, self).clean()
+        sch_time = cleaned_data.get("scheduled_time")
+        if type(sch_time) == type(timezone.now()):
+            if sch_time < timezone.now():
+                msg = u"Message cannot be scheduled for past time !"
+                self._errors["scheduled_time"] = self.error_class([msg])
+                del cleaned_data["scheduled_time"]
+
+        return sch_time
 
 
 def get_related_list(obj):
@@ -57,6 +68,9 @@ def index(request):
 
 def compose(request, msg_id=None):
     if msg_id is not None:
+        new_message = Message.objects.get(id=msg_id)
+        if new_message.status != 'OUTBOX':
+            return HttpResponse("Only the outbox message is editable brother")
         edit = True
     else:
         edit = False
@@ -69,7 +83,8 @@ def compose(request, msg_id=None):
             u_receiver = form.cleaned_data['user_receivers']
             g_receiver = form.cleaned_data['group_receivers']
             message_c = form.cleaned_data['message']
-            s_time = form.cleaned_data['scheduled_time']
+            s_time = form.clean()
+            #pdb.set_trace()
             if s_time is None:
                 stat = 'SEND'
             else:
@@ -78,7 +93,7 @@ def compose(request, msg_id=None):
 
             if edit:
                 app.control.revoke(get_task_id(msg_id), terminate=True)
-                new_message = Message.objects.get(id=msg_id)
+                #new_message = Message.objects.get(id=msg_id)
                 new_message.group_receiver.clear()
                 new_message.user_receiver.clear()
             else:
@@ -122,7 +137,7 @@ def inbox(request):
     return render(request, 'msgin/inbox.html', {'obj': obj})
 
 
-def send(request):
+def sent(request):
     obj = Message.objects.filter(sender=request.user, status="SEND")
     return render(request, "msgin/sent.html", {'obj': obj})
 
@@ -148,3 +163,23 @@ def messages_by_group(request, group_id):
         group_receiver=get_group,
         status="OUTBOX")
     return render(request, "msgin/outbox.html", {'obj': obj})
+
+
+def sent_msg_by_user(request, user_id):
+    get_user = User.objects.get(id=user_id)
+    obj = Message.objects.filter(
+        sender=request.user,
+        user_receiver=get_user,
+        status="SEND")
+    return render(request, "msgin/sent.html", {'obj': obj})
+
+
+def sent_msg_by_group(request, group_id):
+    get_group = Group.objects.get(id=group_id)
+    obj = Message.objects.filter(
+        sender=request.user,
+        group_receiver=get_group,
+        status="SEND")
+    return render(request, "msgin/sent.html", {'obj': obj})
+
+
