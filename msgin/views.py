@@ -7,7 +7,6 @@ from msgin.tasks import scheduled_message
 from msgin.celery import app
 import re
 from django.db.models import Q
-import pdb
 
 
 class ComposeMessageForm(forms.Form):
@@ -37,7 +36,6 @@ class ComposeMessageForm(forms.Form):
     def clean(self):
         cleaned_data = super(ComposeMessageForm, self).clean()
         sch_time = cleaned_data.get("scheduled_time")
-        #sch_time = self.cleaned_data['scheduled_time']
         if type(sch_time) == type(timezone.now()):
             if sch_time < timezone.now():
                 msg = u"Message cannot be scheduled for past time !"
@@ -92,7 +90,6 @@ def compose(request, msg_id=None):
             scheduled = False
             send_by = request.user
             u_receiver = form.cleaned_data['user_receivers']
-            #pdb.set_trace()
             g_receiver = form.cleaned_data['group_receivers']
             message_c = form.cleaned_data['message']
             s_time = form.cleaned_data['scheduled_time']
@@ -104,7 +101,6 @@ def compose(request, msg_id=None):
 
             if edit:
                 app.control.revoke(get_task_id(msg_id), terminate=True)
-                #new_message = Message.objects.get(id=msg_id)
                 new_message.group_receiver.clear()
                 new_message.user_receiver.clear()
             else:
@@ -192,5 +188,3 @@ def sent_msg_by_group(request, group_id):
         group_receiver=get_group,
         status="SEND")
     return render(request, "msgin/sent.html", {'obj': obj})
-
-
