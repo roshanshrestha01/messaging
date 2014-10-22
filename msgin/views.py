@@ -13,8 +13,18 @@ import pdb
 class ComposeMessageForm(forms.Form):
     user_choice = User.objects.all().values_list('id', 'username')
     group_choice = Group.objects.all().values_list('id', 'name')
-    user_receivers = forms.MultipleChoiceField(user_choice, required=False)
-    group_receivers = forms.MultipleChoiceField(group_choice, required=False)
+    user_receivers = forms.MultipleChoiceField(
+        user_choice,
+        required=False,
+        widget=forms.SelectMultiple(
+            attrs={
+                'data-bind': 'selectedOptions: usr_receiver'}))
+    group_receivers = forms.MultipleChoiceField(
+        group_choice,
+        required=False,
+        widget=forms.SelectMultiple(
+            attrs={
+                'data-bind': 'selectedOptions: grp_receiver'}))
     message = forms.CharField(widget=forms.Textarea())
     schedule = forms.BooleanField(
         required=False,
@@ -27,13 +37,14 @@ class ComposeMessageForm(forms.Form):
     def clean(self):
         cleaned_data = super(ComposeMessageForm, self).clean()
         sch_time = cleaned_data.get("scheduled_time")
+        #sch_time = self.cleaned_data['scheduled_time']
         if type(sch_time) == type(timezone.now()):
             if sch_time < timezone.now():
                 msg = u"Message cannot be scheduled for past time !"
                 self._errors["scheduled_time"] = self.error_class([msg])
                 del cleaned_data["scheduled_time"]
 
-        return sch_time
+        return cleaned_data
 
 
 def get_related_list(obj):
@@ -81,10 +92,10 @@ def compose(request, msg_id=None):
             scheduled = False
             send_by = request.user
             u_receiver = form.cleaned_data['user_receivers']
+            #pdb.set_trace()
             g_receiver = form.cleaned_data['group_receivers']
             message_c = form.cleaned_data['message']
-            s_time = form.clean()
-            #pdb.set_trace()
+            s_time = form.cleaned_data['scheduled_time']
             if s_time is None:
                 stat = 'SEND'
             else:
