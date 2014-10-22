@@ -12,8 +12,18 @@ from django.db.models import Q
 class ComposeMessageForm(forms.Form):
     user_choice = User.objects.all().values_list('id', 'username')
     group_choice = Group.objects.all().values_list('id', 'name')
-    user_receivers = forms.MultipleChoiceField(user_choice, required=False)
-    group_receivers = forms.MultipleChoiceField(group_choice, required=False)
+    user_receivers = forms.MultipleChoiceField(
+        user_choice,
+        required=False,
+        widget=forms.SelectMultiple(
+            attrs={
+                'data-bind': 'selectedOptions: usr_receiver'}))
+    group_receivers = forms.MultipleChoiceField(
+        group_choice,
+        required=False,
+        widget=forms.SelectMultiple(
+            attrs={
+                'data-bind': 'selectedOptions: grp_receiver'}))
     message = forms.CharField(widget=forms.Textarea())
     schedule = forms.BooleanField(
         required=False,
@@ -22,7 +32,7 @@ class ComposeMessageForm(forms.Form):
                 'data-bind': 'checked:tog, click:submit_save'}))
     scheduled_time = forms.DateTimeField(
         required=False,
-        widget=forms.SplitDateTimeWidget())
+    )
 
 
 def get_related_list(obj):

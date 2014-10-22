@@ -20,32 +20,24 @@
 
 
 {% csrf_token %}
-	<!--div class = "row">
-		<div class = "small-1 column">
-			<label>{{ form.date.label }}:
-			</label>
-		</div>
-		<div class = "small-5 column">
-			{{ form.date }}
-		</div>
-		<div class = "small-6 column">
-		</div-->
-
-	</div>
-
 	<div class = "row">
 		<div class = "small-6 column">
 			<label>{{ form.user_receivers.label }}:
 			{{ form.user_receivers }}
 			</label>
+			<label> <b>Note: Message can be sent to individaul user/group receiver or both.</b></label>
 		</div>
+		<!--div class = "small-2 column">
+			<h1 style="margin-top: 25px; text-indent: 15px; color: #776677">And/Or</h1>
+		</div-->
+
 		<div class = "small-6 column">
 			<label>{{ form.group_receivers.label }}:
 			{{ form.group_receivers }}
 			</label>
 		</div>
 	</div>
-		
+	<br/>
 	<div class = "row">
 		<div class = "small-12 column">
 			<label>{{ form.message.label }}:
@@ -72,7 +64,7 @@
 		</div>
 	<div class = "row">
 		<div class = "small-12 column">
-			<input id="submit" type="submit" value="Save" data-bind="value: change_button_value">
+			<input id="submit" type="submit" value="Save" data-bind="value: change_button_value, enable: usr_receiver().length > 0 || grp_receiver().length > 0"  >
 		</div>
 		
 	</div>
@@ -86,18 +78,23 @@
 <script type="text/javascript" src="{{ STATIC_URL }}js/dist/jquery.datetimepicker.js"></script>
 
 <script>
-	$('#id_scheduled_time_0').datetimepicker({
-		timepicker:false,
- 		format:'m/d/Y'
+	$('#id_scheduled_time').datetimepicker({
+ 		format:'m/d/Y H:i:s',
+		// inline: true,
+ 		minDate:'-2/01/1970',
 	});
+	
 	$('#id_date').datetimepicker({
 		timepicker:false,
- 		format:'m/d/Y'
+ 		format:'m/d/Y',
+ 		minDate:'-2/01/1970',
+
 	});
 
 	$('#id_scheduled_time_1').datetimepicker({
 		datepicker:false,
-		format:'H:i'
+		format:'H:i',
+		minTime: 0
 	});
 
 	$(document).ready(function(){
@@ -109,10 +106,14 @@
  			plugins: ['remove_button']
 			});
 	});	
+
 	Toggle = function(){
 		var self = this;
 		self.tog = ko.observable(false);
 		self.change_button_value = ko.observable('Submit')
+		self.usr_receiver = ko.observableArray()
+		self.grp_receiver = ko.observableArray()
+
 		self.submit_save = function(data,event){
 			if(self.tog()==true){
 				self.change_button_value('Save');
