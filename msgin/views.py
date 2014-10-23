@@ -36,7 +36,7 @@ class ComposeMessageForm(forms.Form):
     def clean(self):
         cleaned_data = super(ComposeMessageForm, self).clean()
         sch_time = cleaned_data.get("scheduled_time")
-        if type(sch_time) == type(timezone.now()):
+        if isinstance(sch_time, type(timezone.now())):
             if sch_time < timezone.now():
                 msg = u"Message cannot be scheduled for past time !"
                 self._errors["scheduled_time"] = self.error_class([msg])
@@ -140,17 +140,21 @@ def compose(request, msg_id=None):
 def inbox(request):
     group_name = request.user.groups.all()
     obj = Message.objects.filter(Q(user_receiver=request.user) | Q(
-        group_receiver=group_name), status="SEND")
+        group_receiver=group_name), status="SEND").order_by('created_at')
     return render(request, 'msgin/inbox.html', {'obj': obj})
 
 
 def sent(request):
-    obj = Message.objects.filter(sender=request.user, status="SEND")
+    obj = Message.objects.filter(
+        sender=request.user,
+        status="SEND").order_by('created_at')
     return render(request, "msgin/sent.html", {'obj': obj})
 
 
 def outbox(request):
-    obj = Message.objects.filter(sender=request.user, status="OUTBOX")
+    obj = Message.objects.filter(
+        sender=request.user,
+        status="OUTBOX").order_by('created_at')
     return render(request, "msgin/outbox.html", {'obj': obj})
 
 
@@ -159,7 +163,7 @@ def messages_by_user(request, user_id):
     obj = Message.objects.filter(
         sender=request.user,
         user_receiver=get_user,
-        status="OUTBOX")
+        status="OUTBOX").order_by('created_at')
     return render(request, "msgin/outbox.html", {'obj': obj})
 
 
@@ -168,7 +172,7 @@ def messages_by_group(request, group_id):
     obj = Message.objects.filter(
         sender=request.user,
         group_receiver=get_group,
-        status="OUTBOX")
+        status="OUTBOX").order_by('created_at')
     return render(request, "msgin/outbox.html", {'obj': obj})
 
 
@@ -177,7 +181,7 @@ def sent_msg_by_user(request, user_id):
     obj = Message.objects.filter(
         sender=request.user,
         user_receiver=get_user,
-        status="SEND")
+        status="SEND").order_by('created_at')
     return render(request, "msgin/sent.html", {'obj': obj})
 
 
@@ -186,5 +190,5 @@ def sent_msg_by_group(request, group_id):
     obj = Message.objects.filter(
         sender=request.user,
         group_receiver=get_group,
-        status="SEND")
+        status="SEND").order_by('created_at')
     return render(request, "msgin/sent.html", {'obj': obj})
