@@ -7,7 +7,6 @@ from msgin.tasks import scheduled_message
 from msgin.celery import app
 import re
 from django.db.models import Q
-import pdb
 
 from msgin.serializers import MessageSerializer, UserSerializer
 from rest_framework import generics
@@ -169,7 +168,9 @@ def sent_msg_by_group(request, group_id):
 class MessageList(generics.ListCreateAPIView):
     queryset = Message.objects.all()
     serializer_class = MessageSerializer
-    permission_classes = (permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly)
+    permission_classes = (
+        permissions.IsAuthenticatedOrReadOnly,
+        IsOwnerOrReadOnly)
 
     def pre_save(self, obj):
         obj.sender = self.request.user
@@ -178,7 +179,9 @@ class MessageList(generics.ListCreateAPIView):
 class MessageDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Message.objects.all()
     serializer_class = MessageSerializer
-    permission_classes = (permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly)
+    permission_classes = (
+        permissions.IsAuthenticatedOrReadOnly,
+        IsOwnerOrReadOnly)
 
     def pre_save(self, obj):
         obj.sender = self.request.user
