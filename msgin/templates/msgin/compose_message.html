@@ -8,10 +8,10 @@
 	<link rel="stylesheet" href="{{ STATIC_URL }}js/dist/css/jquery.datetimepicker.css" />
 	<style>
 		#and_or {
-			margin-top: 30px;
-			text-indent: 25px; 
+			margin-top: 45px;*/
+			/*text-indent: 15px; */
 			color: #333;
-			font-size: 25px;
+			font-size: 15px;
 			opacity: 0.5; 
 			font-family: Serif;;
 		}
@@ -35,7 +35,7 @@
 			</label>
 		</div>
 		<div class = "small-1 column">
-			<p id="and_or">And/Or</p>
+			<p id="and_or">AND|OR</p>
 		</div>
 
 		<div class = "small-5 column">
@@ -60,23 +60,21 @@
 			{{ form.schedule }}
 		</div>
 	</div>
-		<div class="row">
-		
-					<div class="small-3 column">
-						<label data-bind="visible:tog">{{ form.scheduled_time.label }}:</label>
-					</div>
-					<div class="small-9 column">
-						<p>{{ form.scheduled_time.errors }}</p>
-						<p data-bind="visible:tog">{{ form.scheduled_time }}</p>
-					</div>
-					
+	<div class="row">
+		<div class="small-3 column">
+			<label data-bind="visible:tog">{{ form.scheduled_time.label }}:</label>
+		</div>
+		<div class="small-9 column">
+			<p>{{ form.scheduled_time.errors }}</p>
+			<p data-bind="visible:tog">{{ form.scheduled_time }}</p>
+		</div>
 
-				</div>
+		</div>
 			</div>
 		</div>
 	<div class = "row">
 		<div class = "small-12 column">
-			<input id="submit" type="submit" value="Save" data-bind="value: change_button_value, enable: usr_receiver().length > 0 || grp_receiver().length > 0"  >
+			<input id="submit" type="submit" value="Save" data-bind="value: change_button_value, enable: u_r().length > 0 || g_r().length > 0"  >
 		</div>
 		
 	</div>
@@ -84,14 +82,50 @@
 {% endblock %}
 
 {% block extra_script %}
+
+{% if data_json %}
+<script type="text/javascript">
+    e_msg = {{ data_json|safe }};
+    
+</script>
+{% endif %}
+
 <script type="text/javascript" src="{{ STATIC_URL }}js/dist/js/standalone/selectize.js"></script>
 <script type="text/javascript" src="{{ STATIC_URL }}js/dist/js/standalone/selectize.min.js"></script>
 <script type="text/javascript" src="{{ STATIC_URL }}js/dist/jquery.datetimepicker.js"></script>
 
-<script>
+<script type="text/javascript">
+ko.bindingHandlers.customSelectize = {
+	init: function(element, valueAccessor, allBindings){
+				var $select = $(element).selectize({
+					plugins: ['remove_button']
+				});
+				var selectizeControl = $select[0].selectize;
+
+				selectizeControl.on('change', function() {
+      				var test = selectizeControl.getValue();
+      				var value = valueAccessor();
+      				value(test);
+					});
+	},
+	update: function(element, valueAccessor, allbinding){
+				var value = valueAccessor();
+				var valueUnWrapped = ko.unwrap(value);
+				var $select = $(element).selectize({
+ 				plugins: ['remove_button']
+				});
+				var selectize = $select[0].selectize;
+				for (i=0;i<valueUnWrapped.length;i++){
+					selectize.addItem(valueUnWrapped[i]);
+					};
+	},
+};
+
+</script>
+
+<script type="text/javascript">
 	$('#id_scheduled_time').datetimepicker({
  		format:'m/d/Y H:i:s',
-		// inline: true,
  		minDate:'-2/01/1970',
 	});
 	
@@ -107,24 +141,41 @@
 		format:'H:i',
 		minTime: 0
 	});
-
-	$(document).ready(function(){
-		$('#id_user_receivers').selectize({
- 			plugins: ['remove_button']
-			});
-
-		$('#id_group_receivers').selectize({
- 			plugins: ['remove_button']
-			});
-	});	
-
+	
 	Toggle = function(){
 		var self = this;
 		self.tog = ko.observable(false);
 		self.change_button_value = ko.observable('Submit')
-		self.usr_receiver = ko.observableArray()
-		self.grp_receiver = ko.observableArray()
+		self.get_u_r = function(){
+			if (typeof e_msg === 'undefined') {
+				var data = null;
+                return data;
+			}
+			else {
+				obj = e_msg;
+				// alert(obj.user_receiver);
+				return obj.user_receiver;
+			};
 
+		};
+		self.get_g_r = function(){
+			if (typeof e_msg === 'undefined') {
+				var data =  null;
+                return data;
+			}
+			else {
+				obj = e_msg;
+				return obj.group_receiver;
+			};
+
+		 };
+
+		 var q = self.get_u_r();
+		 var r = self.get_g_r();
+
+		self.u_r = ko.observableArray(q);
+		self.g_r = ko.observableArray(r);
+		
 		self.submit_save = function(data,event){
 			if(self.tog()==true){
 				self.change_button_value('Save');
@@ -136,7 +187,7 @@
 				console.log(event.target.checked); // log out the current state
        			console.log("1");
        			return true; 
-			}
+			};
 		};
 	};
 

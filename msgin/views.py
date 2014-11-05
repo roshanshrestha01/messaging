@@ -2,47 +2,16 @@ from django.shortcuts import render
 from django.http import HttpResponse, HttpResponseRedirect
 from msgin.models import Message, User, Group
 from django.utils import timezone
-from django import forms
+from msgin.forms import ComposeMessageForm
 from msgin.tasks import scheduled_message
 from msgin.celery import app
 import re
 from django.db.models import Q
-
-
-class ComposeMessageForm(forms.Form):
-    user_choice = User.objects.all().values_list('id', 'username')
-    group_choice = Group.objects.all().values_list('id', 'name')
-    user_receivers = forms.MultipleChoiceField(
-        user_choice,
-        required=False,
-        widget=forms.SelectMultiple(
-            attrs={
-                'data-bind': 'selectedOptions: usr_receiver'}))
-    group_receivers = forms.MultipleChoiceField(
-        group_choice,
-        required=False,
-        widget=forms.SelectMultiple(
-            attrs={
-                'data-bind': 'selectedOptions: grp_receiver'}))
-    message = forms.CharField(widget=forms.Textarea())
-    schedule = forms.BooleanField(
-        required=False,
-        widget=forms.CheckboxInput(
-            attrs={
-                'data-bind': 'checked:tog, click:submit_save'}))
-    scheduled_time = forms.DateTimeField(
-        required=False)
-
-    def clean(self):
-        cleaned_data = super(ComposeMessageForm, self).clean()
-        sch_time = cleaned_data.get("scheduled_time")
-        if isinstance(sch_time, type(timezone.now())):
-            if sch_time < timezone.now():
-                msg = u"Message cannot be scheduled for past time !"
-                self._errors["scheduled_time"] = self.error_class([msg])
-                del cleaned_data["scheduled_time"]
-
-        return cleaned_data
+from msgin.serializers import MessageSerializer, UserSerializer
+from rest_framework import generics
+from rest_framework import permissions
+from msgin.permissions import IsOwnerOrReadOnly
+from rest_framework.renderers import JSONRenderer
 
 
 def get_related_list(obj):
@@ -83,6 +52,7 @@ def compose(request, msg_id=None):
         edit = True
     else:
         edit = False
+        data_json = None
     if request.method == 'POST':
         form = ComposeMessageForm(request.POST)
 
@@ -131,30 +101,34 @@ def compose(request, msg_id=None):
                 'scheduled_time': e_message.send_time,
             }
             form = ComposeMessageForm(data)
+            # pdb.set_trace()
+            serializer = MessageSerializer(e_message)
+            data_json = JSONRenderer().render(serializer.data)
+            # pdb.set_trace()
         else:
             form = ComposeMessageForm()
-    context = {'form': form, 'message_id': msg_id}
+    context = {'form': form, 'message_id': msg_id, 'data_json': data_json}
     return render(request, 'msgin/compose_message.html', context)
 
 
 def inbox(request):
     group_name = request.user.groups.all()
     obj = Message.objects.filter(Q(user_receiver=request.user) | Q(
-        group_receiver=group_name), status="SEND").order_by('created_at')
+        group_receiver=group_name), status="SEND").order_by('-created_at')
     return render(request, 'msgin/inbox.html', {'obj': obj})
 
 
 def sent(request):
     obj = Message.objects.filter(
         sender=request.user,
-        status="SEND").order_by('created_at')
+        status="SEND").order_by('-created_at')
     return render(request, "msgin/sent.html", {'obj': obj})
 
 
 def outbox(request):
     obj = Message.objects.filter(
         sender=request.user,
-        status="OUTBOX").order_by('created_at')
+        status="OUTBOX").order_by('-created_at')
     return render(request, "msgin/outbox.html", {'obj': obj})
 
 
@@ -163,7 +137,7 @@ def messages_by_user(request, user_id):
     obj = Message.objects.filter(
         sender=request.user,
         user_receiver=get_user,
-        status="OUTBOX").order_by('created_at')
+        status="OUTBOX").order_by('-created_at')
     return render(request, "msgin/outbox.html", {'obj': obj})
 
 
@@ -172,7 +146,7 @@ def messages_by_group(request, group_id):
     obj = Message.objects.filter(
         sender=request.user,
         group_receiver=get_group,
-        status="OUTBOX").order_by('created_at')
+        status="OUTBOX").order_by('-created_at')
     return render(request, "msgin/outbox.html", {'obj': obj})
 
 
@@ -181,7 +155,7 @@ def sent_msg_by_user(request, user_id):
     obj = Message.objects.filter(
         sender=request.user,
         user_receiver=get_user,
-        status="SEND").order_by('created_at')
+        status="SEND").order_by('-created_at')
     return render(request, "msgin/sent.html", {'obj': obj})
 
 
@@ -190,5 +164,37 @@ def sent_msg_by_group(request, group_id):
     obj = Message.objects.filter(
         sender=request.user,
         group_receiver=get_group,
-        status="SEND").order_by('created_at')
+        status="SEND").order_by('-created_at')
     return render(request, "msgin/sent.html", {'obj': obj})
+
+
+class MessageList(generics.ListCreateAPIView):
+    queryset = Message.objects.all()
+    serializer_class = MessageSerializer
+    permission_classes = (
+        permissions.IsAuthenticatedOrReadOnly,
+        IsOwnerOrReadOnly)
+
+    def pre_save(self, obj):
+        obj.sender = self.request.user
+
+
+class MessageDetail(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Message.objects.all()
+    serializer_class = MessageSerializer
+    permission_classes = (
+        permissions.IsAuthenticatedOrReadOnly,
+        IsOwnerOrReadOnly)
+
+    def pre_save(self, obj):
+        obj.sender = self.request.user
+
+
+class UserList(generics.ListAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+
+
+class UserDetail(generics.RetrieveAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
