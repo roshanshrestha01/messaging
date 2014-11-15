@@ -9,17 +9,28 @@
 	<style>
 		#and_or {
 			margin-top: 45px;*/
-			/*text-indent: 15px; */
 			color: #333;
 			font-size: 15px;
 			opacity: 0.5; 
 			font-family: Serif;;
 		}
+		#add_new_user{
+			text-align: center;
+			padding: 2px;
+			margin: auto 2px;
+			padding-top: 5px;
+		}
+		#add_new_user:hover{
+			background-color: #006ef5;
+			border-radius: 15px;
+			color: white;
+			padding-top: 5px;
+
+		}
 	</style>
 {% endblock %}
 
 {% block content %}
-
 
 {% if message_id %}
 	<form action="/message/{{ message_id }}/" method="post">
@@ -74,56 +85,321 @@
 		</div>
 	<div class = "row">
 		<div class = "small-12 column">
-			<input id="submit" type="submit" value="Save" data-bind="value: change_button_value, enable: u_r().length > 0 || g_r().length > 0"  >
+			<input id="submit" type="submit" value="Save" data-bind="value: change_button_value, enable: selected_item().length > 0 || selected_item1().length > 0"  >
 		</div>
-		
 	</div>
 </form>
+
+<div id="user_receivers" class="reveal-modal" data-reveal>
+    <h1>New User:</h1>
+	<form class="validatedUserForm">
+		 <div class="row">
+		    <div class="large-3 columns">
+		      <label style="float:right">Username</label>
+    		</div>
+			<div class="large-9 columns">
+		      	<input type="text" name="username" id="username" placeholder="Username" />
+		    </div>		      
+    	</div>
+		 <div class="row">
+		    <div class="large-3 columns">
+		      <label style="float:right">Password</label>
+    		</div>
+			<div class="large-9 columns">
+		      	<input type="password" id="password" name="password" placeholder="Password" />
+		    </div>		      
+    	</div>
+		 <div class="row">
+		    <div class="large-3 columns">
+		      <label style="float:right">Email</label>
+    		</div>
+			<div class="large-9 columns">
+		      	<input type="text" name="email" id="email" placeholder="Email" />
+		    </div>		      
+    	</div>
+
+		 <div class="row">
+		    <div class="large-3 columns">
+    		</div>
+			<div class="large-9 columns">
+    			<input type="submit" id="user_submit" value="Save" disabled/>
+		    </div>		      
+    	</div>
+	</form>
+    <a class="close-reveal-modal">&#215;</a>
+</div>
+
+<div id="group_receivers" class="reveal-modal" data-reveal>
+	<h1>Group modal</h1>
+	<form class="validatedGroupForm">
+		 <div class="row">
+		    <div class="large-3 columns">
+		      <label style="float:right">Group Name:</label>
+    		</div>
+			<div class="large-9 columns">
+		      	<input type="text" name="name" id="group_name" placeholder="Group Name" />
+		    </div>		      
+    	</div>
+		 <div class="row">
+		    <div class="large-3 columns">
+    		</div>
+			<div class="large-9 columns">
+    			<input type="submit" id="group_submit" value="Save" disabled/>
+		    </div>		      
+    	</div>
+	</form>
+    <a class="close-reveal-modal">&#215;</a>
+</div>
+
+</div>
 {% endblock %}
 
 {% block extra_script %}
 
 {% if data_json %}
-<script type="text/javascript">
-    e_msg = {{ data_json|safe }};
-    
-</script>
-{% endif %}
+	<script type="text/javascript">
+		e_msg = {{ data_json|safe }}
+	</script>
 
+{% endif %}
 <script type="text/javascript" src="{{ STATIC_URL }}js/dist/js/standalone/selectize.js"></script>
 <script type="text/javascript" src="{{ STATIC_URL }}js/dist/js/standalone/selectize.min.js"></script>
 <script type="text/javascript" src="{{ STATIC_URL }}js/dist/jquery.datetimepicker.js"></script>
 
 <script type="text/javascript">
-ko.bindingHandlers.customSelectize = {
-	init: function(element, valueAccessor, allBindings){
-				var $select = $(element).selectize({
-					plugins: ['remove_button']
-				});
-				var selectizeControl = $select[0].selectize;
+var inject_binding = function (allBindings, key, value) {
+    //https://github.com/knockout/knockout/pull/932#issuecomment-26547528
+    return {
+        has: function (bindingKey) {
+            return (bindingKey == key) || allBindings.has(bindingKey);
+        },
+        get: function (bindingKey) {
+            var binding = allBindings.get(bindingKey);
+            if (bindingKey == key) {
+                binding = binding ? [].concat(binding, value) : value;
+            }
+            return binding;
+        }
+    };
+}
 
-				selectizeControl.on('change', function() {
-      				var test = selectizeControl.getValue();
-      				var value = valueAccessor();
-      				value(test);
-					});
-	},
-	update: function(element, valueAccessor, allbinding){
-				var value = valueAccessor();
-				var valueUnWrapped = ko.unwrap(value);
-				var $select = $(element).selectize({
+ko.bindingHandlers.selectize = {
+    init: function (element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) {
+        if (!allBindingsAccessor.has('optionsText'))
+            allBindingsAccessor = inject_binding(allBindingsAccessor, 'optionsText', 'name');
+        if (!allBindingsAccessor.has('optionsValue'))
+            allBindingsAccessor = inject_binding(allBindingsAccessor, 'optionsValue', 'id');
+        if (typeof allBindingsAccessor.get('optionsCaption') == 'undefined')
+            allBindingsAccessor = inject_binding(allBindingsAccessor, 'optionsCaption', 'Choose...');
+
+        ko.bindingHandlers.options.update(element, valueAccessor, allBindingsAccessor, viewModel, bindingContext);
+
+        var options = {
+            valueField: allBindingsAccessor.get('optionsValue'),
+            labelField: allBindingsAccessor.get('optionsText'),
+            searchField: allBindingsAccessor.get('optionsText')
+        }
+
+        if (allBindingsAccessor.has('options')) {
+            var passed_options = allBindingsAccessor.get('options')
+            for (var attr_name in passed_options) {
+                options[attr_name] = passed_options[attr_name];
+            }
+        }
+        //remove plugin added in downloaded code
+		var $select = $(element).selectize({
  				plugins: ['remove_button']
 				});
-				var selectize = $select[0].selectize;
-				for (i=0;i<valueUnWrapped.length;i++){
-					selectize.addItem(valueUnWrapped[i]);
-					};
-	},
-};
+		// up to here remove code
+        var $select = $(element).selectize(options)[0].selectize;
 
+        if (typeof allBindingsAccessor.get('value') == 'function') {
+            $select.addItem(allBindingsAccessor.get('value')());
+            allBindingsAccessor.get('value').subscribe(function (new_val) {
+                $select.addItem(new_val);
+            })
+        }
+
+        if (typeof allBindingsAccessor.get('selectedOptions') == 'function') {
+            allBindingsAccessor.get('selectedOptions').subscribe(function (new_val) {
+                // Removing items which are not in new value
+                var values = $select.getValue();
+                var items_to_remove = [];
+                for (var k in values) {
+                    if (new_val.indexOf(values[k]) == -1) {
+                        items_to_remove.push(values[k]);
+                    }
+                }
+
+                for (var k in items_to_remove) {
+                    $select.removeItem(items_to_remove[k]);
+                }
+
+                for (var k in new_val) {
+                    $select.addItem(new_val[k]);
+                }
+
+            });
+            var selected = allBindingsAccessor.get('selectedOptions')();
+            for (var k in selected) {
+                $select.addItem(selected[k]);
+            }
+        }
+
+
+        if (typeof init_selectize == 'function') {
+            init_selectize($select);
+        }
+
+        if (typeof valueAccessor().subscribe == 'function') {
+            valueAccessor().subscribe(function (changes) {
+                // To avoid having duplicate keys, all delete operations will go first
+                var addedItems = new Array();
+                changes.forEach(function (change) {
+                    switch (change.status) {
+                        case 'added':
+                            addedItems.push(change.value);
+                            break;
+                        case 'deleted':
+                            var itemId = change.value[options.valueField];
+                            if (itemId != null) $select.removeOption(itemId);
+                    }
+                });
+                addedItems.forEach(function (item) {
+                    $select.addOption(item);
+                });
+
+            }, null, "arrayChange");
+        }
+		// Add new appended
+		var name = $(element).attr("name");
+		var add_name = "<p id='add_new_user'>Add " + name + "</p>";
+		var dropdown = $(element).parent().find(".selectize-dropdown");
+		dropdown.append(add_name);
+		// link to modal
+		var modal_link = $(element).parent().find("#add_new_user");
+		modal_link.attr("data-reveal-id", name);
+    },
+    update: function (element, valueAccessor, allBindingsAccessor) {
+
+        if (allBindingsAccessor.has('object')) {
+            var optionsValue = allBindingsAccessor.get('optionsValue') || 'id';
+            var value_accessor = valueAccessor();
+            var selected_obj = $.grep(value_accessor(), function (i) {
+                if (typeof i[optionsValue] == 'function')
+                    var id = i[optionsValue]
+                else
+                    var id = i[optionsValue]
+                return id == allBindingsAccessor.get('value')();
+            })[0];
+
+            if (selected_obj) {
+                allBindingsAccessor.get('object')(selected_obj);
+            }
+        }
+    }
+}
 </script>
 
 <script type="text/javascript">
+	$(".validatedGroupForm").validate({
+		rules: {
+		group_name: {
+				required: true,
+			},
+		},
+		message: {
+			group_name: "Please enter username",
+		}
+	});
+
+	$(".validatedUserForm").validate({
+		rules: {
+			password : {
+				required: true,
+				minlength: 6,
+				maxlength: 10,
+			},
+
+		username: {
+				required: true,
+			},
+			email : {
+				required: true,
+				email: true,
+			}
+		},
+		message: {
+			username: "Please enter username",
+			password: {
+				required: "The password is required"
+			},
+    		email: {
+				required: "We need your email address to contact you",
+				email: "Your email address must be in the format of name@domain.com"
+			},
+		}
+	});
+
+	$('.validatedUserForm input').on('keyup blur', function () { // fires on every keyup & blur
+        if ($(this).valid()) {                   // checks form for validity
+            $('#user_submit').prop('disabled', false);        // enables button
+        } else {
+            $('#user_submit').prop('disabled', 'disabled');   // disables button
+        }
+    });
+
+	$('.validatedGroupForm input').on('keyup blur', function () { // fires on every keyup & blur
+        if ($(this).valid()) {                   // checks form for validity
+            $('#group_submit').prop('disabled', false);        // enables button
+        } else {
+            $('#group_submit').prop('disabled', 'disabled');   // disables button
+        }
+    });
+
+	$('#group_submit').click(function(){
+		var group_json_data = JSON.stringify($('.validatedGroupForm').serializeJSON(), null, 2);
+		$.ajax({
+			url: "/group/",
+			type: "POST",
+			async: false,
+			contentType: "application/json",
+			dataType: 'json',
+			data: group_json_data,
+			error: function(XMLHttpRequest, textStatus, errorThrown) {
+     			alert("some error");
+     		},
+     		success: function(){
+     			alert("group created")
+     		},
+     		// complete: function(){
+     		// 	alert("complete");
+     		// }
+		});
+	})
+
+	$('#user_submit').click(function(){
+		var user_json_data = JSON.stringify($('.validatedUserForm').serializeJSON(), null, 2);
+		$.ajax({
+			url :"/users/",
+			type: "POST",
+			async: false,
+			contentType: "application/json",
+			dataType: 'json',
+			data: user_json_data,
+			error: function(XMLHttpRequest, textStatus, errorThrown) {
+     			alert("some error");
+     		},
+     		success: function(){
+     			alert("user created")
+     		},
+     		// complete: function(){
+     		// 	alert("complete");
+     		// }
+		});
+	});	
+
+
 	$('#id_scheduled_time').datetimepicker({
  		format:'m/d/Y H:i:s',
  		minDate:'-2/01/1970',
@@ -170,12 +446,10 @@ ko.bindingHandlers.customSelectize = {
 
 		 };
 
-		 var q = self.get_u_r();
-		 var r = self.get_g_r();
-
-		self.u_r = ko.observableArray(q);
-		self.g_r = ko.observableArray(r);
-		
+		var q = self.get_u_r();
+		var r = self.get_g_r();
+		self.selected_item = ko.observableArray(q);
+		self.selected_item1 = ko.observableArray(r);
 		self.submit_save = function(data,event){
 			if(self.tog()==true){
 				self.change_button_value('Save');

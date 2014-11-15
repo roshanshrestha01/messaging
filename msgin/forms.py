@@ -4,20 +4,20 @@ from django.utils import timezone
 
 
 class ComposeMessageForm(forms.Form):
-    user_choice = User.objects.all().values_list('id', 'username')
-    group_choice = Group.objects.all().values_list('id', 'name')
-    user_receivers = forms.MultipleChoiceField(
-        user_choice,
+    user_receivers = forms.ModelMultipleChoiceField(
+        queryset=User.objects.all(),
         required=False,
         widget=forms.SelectMultiple(
             attrs={
-                'data-bind': 'customSelectize: u_r'}))
-    group_receivers = forms.MultipleChoiceField(
-        group_choice,
+                'data-bind': 'selectize: {}, selectedOptions: selected_item',
+                'placeholder': "Select User"}))
+    group_receivers = forms.ModelMultipleChoiceField(
+        queryset=Group.objects.all(),
         required=False,
         widget=forms.SelectMultiple(
             attrs={
-                'data-bind': 'customSelectize: g_r'}))
+                'data-bind': 'selectize: {}, selectedOptions: selected_item1',
+                'placeholder': "Select Group"}))
     message = forms.CharField(widget=forms.Textarea())
     schedule = forms.BooleanField(
         required=False,
