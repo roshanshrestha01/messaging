@@ -92,13 +92,13 @@
 
 <div id="user_receivers" class="reveal-modal" data-reveal>
     <h1>New User:</h1>
-	<form class="validatedUserForm">
+	<form class="validatedUserForm" data-bind="with: validate_user">
 		 <div class="row">
 		    <div class="large-3 columns">
 		      <label style="float:right">Username</label>
     		</div>
 			<div class="large-9 columns">
-		      	<input type="text" name="username" id="username" placeholder="Username" />
+		      	<input type="text" name="username" id="username" placeholder="Username" required/>
 		    </div>		      
     	</div>
 		 <div class="row">
@@ -106,15 +106,17 @@
 		      <label style="float:right">Password</label>
     		</div>
 			<div class="large-9 columns">
-		      	<input type="password" id="password" name="password" placeholder="Password" />
+		      	<input type="password" data-bind="value: password,valueUpdate: 'afterkeydown'" id="password" name="password" placeholder="Password" required/>
 		    </div>		      
     	</div>
 		 <div class="row">
 		    <div class="large-3 columns">
-		      <label style="float:right">Email</label>
+		      <label style="float:right"></label>
     		</div>
 			<div class="large-9 columns">
-		      	<input type="text" name="email" id="email" placeholder="Email" />
+		      	<input type="password" data-bind="value: confirm_password, valueUpdate: 'afterkeydown'" name="cfm_password" id="cfm_password" placeholder="Confirm password" required/>
+		      <label data-bind="text: confirm_msg" style="float:right; color: red"></label>
+
 		    </div>		      
     	</div>
 
@@ -122,8 +124,8 @@
 		    <div class="large-3 columns">
     		</div>
 			<div class="large-9 columns">
-    			<input type="submit" id="user_submit" value="Save" disabled/>
-		    </div>		      
+    			<input type="submit" data-bind="enable: submit_button" id="user_submit" value="Save" disabled/>
+		    </div>		       
     	</div>
 	</form>
     <a class="close-reveal-modal">&#215;</a>
@@ -137,20 +139,19 @@
 		      <label style="float:right">Group Name:</label>
     		</div>
 			<div class="large-9 columns">
-		      	<input type="text" name="name" id="group_name" placeholder="Group Name" />
+		      	<input type="text" name="name" id="group_name" placeholder="Group Name" required/>
 		    </div>		      
     	</div>
 		 <div class="row">
 		    <div class="large-3 columns">
     		</div>
 			<div class="large-9 columns">
-    			<input type="submit" id="group_submit" value="Save" disabled/>
+    			<input type="submit" id="group_submit" value="Save"/>
 		    </div>		      
     	</div>
 	</form>
     <a class="close-reveal-modal">&#215;</a>
 </div>
-
 </div>
 {% endblock %}
 
@@ -207,9 +208,9 @@ ko.bindingHandlers.selectize = {
             }
         }
         //remove plugin added in downloaded code
-		var $select = $(element).selectize({
- 				plugins: ['remove_button']
-				});
+		// var $select = $(element).selectize({
+ 	// 			plugins: ['remove_button']
+		// 		});
 		// up to here remove code
         var $select = $(element).selectize(options)[0].selectize;
 
@@ -302,101 +303,46 @@ ko.bindingHandlers.selectize = {
 </script>
 
 <script type="text/javascript">
-	$(".validatedGroupForm").validate({
-		rules: {
-		group_name: {
-				required: true,
-			},
-		},
-		message: {
-			group_name: "Please enter username",
-		}
-	});
-
-	$(".validatedUserForm").validate({
-		rules: {
-			password : {
-				required: true,
-				minlength: 6,
-				maxlength: 10,
-			},
-
-		username: {
-				required: true,
-			},
-			email : {
-				required: true,
-				email: true,
-			}
-		},
-		message: {
-			username: "Please enter username",
-			password: {
-				required: "The password is required"
-			},
-    		email: {
-				required: "We need your email address to contact you",
-				email: "Your email address must be in the format of name@domain.com"
-			},
-		}
-	});
-
-	$('.validatedUserForm input').on('keyup blur', function () { // fires on every keyup & blur
-        if ($(this).valid()) {                   // checks form for validity
-            $('#user_submit').prop('disabled', false);        // enables button
-        } else {
-            $('#user_submit').prop('disabled', 'disabled');   // disables button
-        }
-    });
-
-	$('.validatedGroupForm input').on('keyup blur', function () { // fires on every keyup & blur
-        if ($(this).valid()) {                   // checks form for validity
-            $('#group_submit').prop('disabled', false);        // enables button
-        } else {
-            $('#group_submit').prop('disabled', 'disabled');   // disables button
-        }
-    });
-
-	$('#group_submit').click(function(){
+	$('#group_submit').click(function(e){
+		e.preventDefault();
 		var group_json_data = JSON.stringify($('.validatedGroupForm').serializeJSON(), null, 2);
 		$.ajax({
 			url: "/group/",
 			type: "POST",
-			async: false,
+			// async: false,
 			contentType: "application/json",
 			dataType: 'json',
 			data: group_json_data,
 			error: function(XMLHttpRequest, textStatus, errorThrown) {
-     			alert("some error");
+ 				alert(xhr.responseText);
      		},
-     		success: function(){
-     			alert("group created")
-     		},
-     		// complete: function(){
-     		// 	alert("complete");
-     		// }
-		});
-	})
+     		success: function(data){
+     			toggle.select_group.push([data]);
 
-	$('#user_submit').click(function(){
+     		},
+		});
+		$('#group_receivers').foundation('reveal', 'close');
+		return false;
+	});
+
+	$('#user_submit').click(function(e){
+		e.preventDefault();
 		var user_json_data = JSON.stringify($('.validatedUserForm').serializeJSON(), null, 2);
 		$.ajax({
 			url :"/users/",
 			type: "POST",
-			async: false,
 			contentType: "application/json",
 			dataType: 'json',
 			data: user_json_data,
-			error: function(XMLHttpRequest, textStatus, errorThrown) {
-     			alert("some error");
+			error: function(xhr, textStatus, errorThrown) {
+ 				alert(xhr.responseText);
      		},
-     		success: function(){
-     			alert("user created")
+     		success: function(data){
+     			toggle.select_user.push([data]);
      		},
-     		// complete: function(){
-     		// 	alert("complete");
-     		// }
 		});
+		$('#user_receivers').foundation('reveal', 'close');
+		return false;
 	});	
 
 
@@ -418,10 +364,46 @@ ko.bindingHandlers.selectize = {
 		minTime: 0
 	});
 	
+	validateUserVM = function(){
+		var self = this;
+		self.confirm_msg = ko.observable();
+		self.password = ko.observable();
+		self.confirm_password = ko.observable()
+		self.submit_button = ko.computed(function(){
+			if ( self.password() == self.confirm_password()){
+				return true;
+			} else {
+				self.confirm_msg("Confirm your password to activate save")
+				return false;
+			}
+
+		})
+	};
+
 	Toggle = function(){
 		var self = this;
+		validate_user = validateUserVM;
 		self.tog = ko.observable(false);
+		self.select_user = ko.observableArray();
+		self.select_group = ko.observableArray();
 		self.change_button_value = ko.observable('Submit')
+		$.ajax({
+			url: '/users/.json',
+			type: 'GET',
+			dataType: 'json',
+			success: function(data){
+				self.select_user(data);
+			}
+		});
+		$.ajax({
+			url: '/group/.json',
+			type: 'GET',
+			dataType: 'json',
+			success: function(data){
+				self.select_group(data);
+			}
+		});
+
 		self.get_u_r = function(){
 			if (typeof e_msg === 'undefined') {
 				var data = null;
@@ -429,7 +411,6 @@ ko.bindingHandlers.selectize = {
 			}
 			else {
 				obj = e_msg;
-				// alert(obj.user_receiver);
 				return obj.user_receiver;
 			};
 
@@ -467,6 +448,5 @@ ko.bindingHandlers.selectize = {
 
 	toggle = new Toggle();
 	ko.applyBindings(toggle);
-
 </script>
 {% endblock %}

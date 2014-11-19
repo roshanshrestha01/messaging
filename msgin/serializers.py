@@ -27,8 +27,14 @@ class UserSerializer(serializers.ModelSerializer):
         fields = (
             'id',
             'username',
-            'password',
-            'email',)
+            'password',)
+
+    def save(self, *args, **kwargs):
+        user = super(UserSerializer, self).save(*args, **kwargs)
+        password = user.password
+        user.set_password(password)
+        user.save()
+
 
 class GroupSerializer(serializers.ModelSerializer):
 

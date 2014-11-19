@@ -9,14 +9,14 @@ class ComposeMessageForm(forms.Form):
         required=False,
         widget=forms.SelectMultiple(
             attrs={
-                'data-bind': 'selectize: {}, selectedOptions: selected_item',
+                'data-bind': 'selectize: select_user, selectedOptions: selected_item, options: {plugins: ["remove_button"]}, optionsText: "username"',
                 'placeholder': "Select User"}))
     group_receivers = forms.ModelMultipleChoiceField(
         queryset=Group.objects.all(),
         required=False,
         widget=forms.SelectMultiple(
             attrs={
-                'data-bind': 'selectize: {}, selectedOptions: selected_item1',
+                'data-bind': 'selectize: select_group, selectedOptions: selected_item1, options: {plugins: ["remove_button"]}',
                 'placeholder': "Select Group"}))
     message = forms.CharField(widget=forms.Textarea())
     schedule = forms.BooleanField(
