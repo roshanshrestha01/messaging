@@ -3,10 +3,10 @@ from django.contrib.auth.models import User, Group
 
 
 class Message(models.Model):
-    sender = models.ForeignKey(User, related_name='message_sender')
+    sender = models.ForeignKey(User, related_name='sent_messages')
     user_receiver = models.ManyToManyField(
         User,
-        related_name='message_receiver',
+        related_name='users',
         null=True,
         blank=True)
     group_receiver = models.ManyToManyField(Group, null=True, blank=True)

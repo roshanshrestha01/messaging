@@ -1,1 +1,28 @@
 {% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+	<div class="-12 column">
+		<ul class="small-block-grid-4">
+			<li>
+				<a href="/message/compose/"><img src="{{ STATIC_URL }}img/compose.png" alt="No image"/>
+				<label style="text-align: center">Compose</label></a>
+			</li>
+			<li>
+				<a href="/message/sent/"><img src="{{ STATIC_URL }}img/sent.png" alt="No image"/>
+				<label style="text-align: center">Sent</label></a>
+			</li>
+			<li>
+				<a href="/message/inbox/"><img src="{{ STATIC_URL }}img/inbox.png" alt="No image"/> 
+				<label style="text-align: center">Inbox</label></a>
+			</li>
+			<li>
+				<a href="/message/outbox/"><img src="{{ STATIC_URL }}img/outbox3.png" alt="No image"/> 
+				<label style="text-align: center">Outox</label></a>
+
+			</li>
+		
+		</ul>
+	</div>
+</div>
+{% endblock %}

@@ -1,28 +1,17 @@
 from django.shortcuts import render
-from django.http import HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect
 from msgin.models import Message, User, Group
 from django.utils import timezone
-from django import forms
+from msgin.forms import ComposeMessageForm
 from msgin.tasks import scheduled_message
 from msgin.celery import app
 import re
 from django.db.models import Q
-
-
-class ComposeMessageForm(forms.Form):
-    user_choice = User.objects.all().values_list('id', 'username')
-    group_choice = Group.objects.all().values_list('id', 'name')
-    user_receivers = forms.MultipleChoiceField(user_choice, required=False)
-    group_receivers = forms.MultipleChoiceField(group_choice, required=False)
-    message = forms.CharField(widget=forms.Textarea())
-    schedule = forms.BooleanField(
-        required=False,
-        widget=forms.CheckboxInput(
-            attrs={
-                'data-bind': 'checked:tog, click:submit_save'}))
-    scheduled_time = forms.DateTimeField(
-        required=False,
-        widget=forms.SplitDateTimeWidget())
+from msgin.serializers import MessageSerializer, UserSerializer, GroupSerializer
+from rest_framework import generics
+from rest_framework import permissions
+from msgin.permissions import IsOwnerOrReadOnly
+from rest_framework.renderers import JSONRenderer
 
 
 def get_related_list(obj):
@@ -57,9 +46,13 @@ def index(request):
 
 def compose(request, msg_id=None):
     if msg_id is not None:
+        new_message = Message.objects.get(id=msg_id)
+        if new_message.status != 'OUTBOX':
+            return HttpResponse("Only the outbox message is editable brother")
         edit = True
     else:
         edit = False
+        data_json = None
     if request.method == 'POST':
         form = ComposeMessageForm(request.POST)
 
@@ -78,7 +71,6 @@ def compose(request, msg_id=None):
 
             if edit:
                 app.control.revoke(get_task_id(msg_id), terminate=True)
-                new_message = Message.objects.get(id=msg_id)
                 new_message.group_receiver.clear()
                 new_message.user_receiver.clear()
             else:
@@ -109,29 +101,111 @@ def compose(request, msg_id=None):
                 'scheduled_time': e_message.send_time,
             }
             form = ComposeMessageForm(data)
+            # pdb.set_trace()
+            serializer = MessageSerializer(e_message)
+            data_json = JSONRenderer().render(serializer.data)
+            # pdb.set_trace()
         else:
             form = ComposeMessageForm()
-    context = {'form': form, 'message_id': msg_id}
+    context = {'form': form, 'message_id': msg_id, 'data_json': data_json}
+    # context = {'form': form, 'message_id': msg_id}
     return render(request, 'msgin/compose_message.html', context)
 
 
 def inbox(request):
     group_name = request.user.groups.all()
     obj = Message.objects.filter(Q(user_receiver=request.user) | Q(
-        group_receiver=group_name), status="SEND")
+        group_receiver=group_name), status="SEND").order_by('-created_at')
     return render(request, 'msgin/inbox.html', {'obj': obj})
 
 
-def send(request):
-    obj = Message.objects.filter(sender=request.user, status="SEND")
+def sent(request):
+    obj = Message.objects.filter(
+        sender=request.user,
+        status="SEND").order_by('-created_at')
     return render(request, "msgin/sent.html", {'obj': obj})
 
 
 def outbox(request):
-    obj = Message.objects.filter(sender=request.user, status="OUTBOX")
+    obj = Message.objects.filter(
+        sender=request.user,
+        status="OUTBOX").order_by('-created_at')
     return render(request, "msgin/outbox.html", {'obj': obj})
 
 
 def messages_by_user(request, user_id):
-    obj = Message.objects.filter(sender=request.user, user_receiver_id=user_id)
+    get_user = User.objects.get(id=user_id)
+    obj = Message.objects.filter(
+        sender=request.user,
+        user_receiver=get_user,
+        status="OUTBOX").order_by('-created_at')
     return render(request, "msgin/outbox.html", {'obj': obj})
+
+
+def messages_by_group(request, group_id):
+    get_group = Group.objects.get(id=group_id)
+    obj = Message.objects.filter(
+        sender=request.user,
+        group_receiver=get_group,
+        status="OUTBOX").order_by('-created_at')
+    return render(request, "msgin/outbox.html", {'obj': obj})
+
+
+def sent_msg_by_user(request, user_id):
+    get_user = User.objects.get(id=user_id)
+    obj = Message.objects.filter(
+        sender=request.user,
+        user_receiver=get_user,
+        status="SEND").order_by('-created_at')
+    return render(request, "msgin/sent.html", {'obj': obj})
+
+
+def sent_msg_by_group(request, group_id):
+    get_group = Group.objects.get(id=group_id)
+    obj = Message.objects.filter(
+        sender=request.user,
+        group_receiver=get_group,
+        status="SEND").order_by('-created_at')
+    return render(request, "msgin/sent.html", {'obj': obj})
+
+
+class MessageList(generics.ListCreateAPIView):
+    queryset = Message.objects.all()
+    serializer_class = MessageSerializer
+    permission_classes = (
+        permissions.IsAuthenticatedOrReadOnly,
+        IsOwnerOrReadOnly)
+
+    def pre_save(self, obj):
+        obj.sender = self.request.user
+
+
+class MessageDetail(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Message.objects.all()
+    serializer_class = MessageSerializer
+    permission_classes = (
+        permissions.IsAuthenticatedOrReadOnly,
+        IsOwnerOrReadOnly)
+
+    def pre_save(self, obj):
+        obj.sender = self.request.user
+
+
+class UserList(generics.ListCreateAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+
+
+class UserDetail(generics.RetrieveUpdateDestroyAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+
+
+class GroupList(generics.ListCreateAPIView):
+    queryset = Group.objects.all()
+    serializer_class = GroupSerializer
+
+
+class GroupDetail(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Group.objects.all()
+    serializer_class = GroupSerializer

@@ -47,6 +47,7 @@ INSTALLED_APPS = (
     'msgin',
     'linaro_django_pagination',
     'webstack_django_sorting',
+    'rest_framework',
 )
 
 PAGINATION_SETTINGS = {

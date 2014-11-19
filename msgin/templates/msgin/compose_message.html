@@ -6,11 +6,31 @@
 	<link rel="stylesheet" href="{{ STATIC_URL }}js/dist/css/selectize.default.css" />
 	<link rel="stylesheet" href="{{ STATIC_URL }}js/dist/css/selectize.legacy.css" />
 	<link rel="stylesheet" href="{{ STATIC_URL }}js/dist/css/jquery.datetimepicker.css" />
+	<style>
+		#and_or {
+			margin-top: 25px;
+			color: #333;
+			font-size: 15px;
+			opacity: 0.5; 
+			font-family: Serif;;
+		}
+		#add_new_user{
+			text-align: center;
+			padding: 2px;
+			margin: auto 2px;
+			padding-top: 5px;
+		}
+		#add_new_user:hover{
+			background-color: #006ef5;
+			border-radius: 15px;
+			color: white;
+			padding-top: 5px;
 
+		}
+	</style>
 {% endblock %}
 
 {% block content %}
-
 
 {% if message_id %}
 	<form action="/message/{{ message_id }}/" method="post">
@@ -18,21 +38,7 @@
 	<form action="/message/compose/" method="post">
 {% endif %}
 
-
 {% csrf_token %}
-	<!--div class = "row">
-		<div class = "small-1 column">
-			<label>{{ form.date.label }}:#5199B1
-			</label>
-		</div>
-		<div class = "small-5 column">
-			{{ form.date }}
-		</div>
-		<div class = "small-6 column">
-		</div-->
-
-	</div>
-
 	<div class = "row">
 		<div class = "small-5 column">
 			<label>{{ form.user_receivers.label }}:
@@ -40,18 +46,23 @@
 			</label>
 		</div>
 		<div class = "small-2 column" style="margin-top: 25px;text-indent: 25px">
-			<h3 style="color: #888888">And/Or</h3>
+			<h3 style="color: #333">And/Or</h3>
 		</div>
+		<!--div class = "small-1 column">
+			<p id="and_or">AND|OR</p>
+		</div-->
+
 		<div class = "small-5 column">
 			<label>{{ form.group_receivers.label }}:
 			{{ form.group_receivers }}
 			</label>
 		</div>
 	</div>
-		
+	<br/>
 	<div class = "row">
 		<div class = "small-12 column">
 			<label>{{ form.message.label }}:
+			<p>{{ form.message.errors }}</p>
 			{{ form.message }}
 			</label>
 		</div>
@@ -63,60 +74,366 @@
 			{{ form.schedule }}
 		</div>
 	</div>
-		<div class="row">
-					<div class="small-3 column">
-						<label data-bind="visible:tog">{{ form.scheduled_time.label }}:</label>
-					</div>
-					<div class="small-9 column">
-						<p data-bind="visible:tog">{{ form.scheduled_time }}</p>
-					</div>
-				</div>
+	<div class="row">
+		<div class="small-3 column">
+			<label data-bind="visible:tog">{{ form.scheduled_time.label }}:</label>
+		</div>
+		<div class="small-9 column">
+			<p>{{ form.scheduled_time.errors }}</p>
+			<p data-bind="visible:tog">{{ form.scheduled_time }}</p>
+		</div>
+
+		</div>
 			</div>
 		</div>
 	<div class = "row">
 		<div class = "small-12 column">
-			<input id="submit" type="submit" value="Save" data-bind="value: change_button_value">
+			<input id="submit" type="submit" value="Save" data-bind="value: change_button_value, enable: selected_item().length > 0 || selected_item1().length > 0"  >
 		</div>
-		
 	</div>
 </form>
 
+<div id="user_receivers" class="reveal-modal" data-reveal>
+    <h1>New User:</h1>
+	<form class="validatedUserForm" data-bind="with: validate_user">
+		 <div class="row">
+		    <div class="large-3 columns">
+		      <label style="float:right">Username</label>
+    		</div>
+			<div class="large-9 columns">
+		      	<input type="text" name="username" id="username" placeholder="Username" required/>
+		    </div>		      
+    	</div>
+		 <div class="row">
+		    <div class="large-3 columns">
+		      <label style="float:right">Password</label>
+    		</div>
+			<div class="large-9 columns">
+		      	<input type="password" data-bind="value: password,valueUpdate: 'afterkeydown'" id="password" name="password" placeholder="Password" required/>
+		    </div>		      
+    	</div>
+		 <div class="row">
+		    <div class="large-3 columns">
+		      <label style="float:right"></label>
+    		</div>
+			<div class="large-9 columns">
+		      	<input type="password" data-bind="value: confirm_password, valueUpdate: 'afterkeydown'" name="cfm_password" id="cfm_password" placeholder="Confirm password" required/>
+		      <label data-bind="text: confirm_msg" style="float:right; color: red"></label>
+
+		    </div>		      
+    	</div>
+
+		 <div class="row">
+		    <div class="large-3 columns">
+    		</div>
+			<div class="large-9 columns">
+    			<input type="submit" data-bind="enable: submit_button" id="user_submit" value="Save" disabled/>
+		    </div>		       
+    	</div>
+	</form>
+    <a class="close-reveal-modal">&#215;</a>
+</div>
+
+<div id="group_receivers" class="reveal-modal" data-reveal>
+	<h1>Group modal</h1>
+	<form class="validatedGroupForm">
+		 <div class="row">
+		    <div class="large-3 columns">
+		      <label style="float:right">Group Name:</label>
+    		</div>
+			<div class="large-9 columns">
+		      	<input type="text" name="name" id="group_name" placeholder="Group Name" required/>
+		    </div>		      
+    	</div>
+		 <div class="row">
+		    <div class="large-3 columns">
+    		</div>
+			<div class="large-9 columns">
+    			<input type="submit" id="group_submit" value="Save"/>
+		    </div>		      
+    	</div>
+	</form>
+    <a class="close-reveal-modal">&#215;</a>
+</div>
+</div>
 {% endblock %}
 
 {% block extra_script %}
+
+{% if data_json %}
+	<script type="text/javascript">
+		e_msg = {{ data_json|safe }}
+	</script>
+
+{% endif %}
 <script type="text/javascript" src="{{ STATIC_URL }}js/dist/js/standalone/selectize.js"></script>
 <script type="text/javascript" src="{{ STATIC_URL }}js/dist/js/standalone/selectize.min.js"></script>
 <script type="text/javascript" src="{{ STATIC_URL }}js/dist/jquery.datetimepicker.js"></script>
 
-<script>
-	$('#id_scheduled_time_0').datetimepicker({
-		timepicker:false,
- 		format:'m/d/Y',
- 		minDate:'-02/01/1970'
+<script type="text/javascript">
+var inject_binding = function (allBindings, key, value) {
+    //https://github.com/knockout/knockout/pull/932#issuecomment-26547528
+    return {
+        has: function (bindingKey) {
+            return (bindingKey == key) || allBindings.has(bindingKey);
+        },
+        get: function (bindingKey) {
+            var binding = allBindings.get(bindingKey);
+            if (bindingKey == key) {
+                binding = binding ? [].concat(binding, value) : value;
+            }
+            return binding;
+        }
+    };
+}
+
+ko.bindingHandlers.selectize = {
+    init: function (element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) {
+        if (!allBindingsAccessor.has('optionsText'))
+            allBindingsAccessor = inject_binding(allBindingsAccessor, 'optionsText', 'name');
+        if (!allBindingsAccessor.has('optionsValue'))
+            allBindingsAccessor = inject_binding(allBindingsAccessor, 'optionsValue', 'id');
+        if (typeof allBindingsAccessor.get('optionsCaption') == 'undefined')
+            allBindingsAccessor = inject_binding(allBindingsAccessor, 'optionsCaption', 'Choose...');
+
+        ko.bindingHandlers.options.update(element, valueAccessor, allBindingsAccessor, viewModel, bindingContext);
+
+        var options = {
+            valueField: allBindingsAccessor.get('optionsValue'),
+            labelField: allBindingsAccessor.get('optionsText'),
+            searchField: allBindingsAccessor.get('optionsText')
+        }
+
+        if (allBindingsAccessor.has('options')) {
+            var passed_options = allBindingsAccessor.get('options')
+            for (var attr_name in passed_options) {
+                options[attr_name] = passed_options[attr_name];
+            }
+        }
+        //remove plugin added in downloaded code
+		// var $select = $(element).selectize({
+ 	// 			plugins: ['remove_button']
+		// 		});
+		// up to here remove code
+        var $select = $(element).selectize(options)[0].selectize;
+
+        if (typeof allBindingsAccessor.get('value') == 'function') {
+            $select.addItem(allBindingsAccessor.get('value')());
+            allBindingsAccessor.get('value').subscribe(function (new_val) {
+                $select.addItem(new_val);
+            })
+        }
+
+        if (typeof allBindingsAccessor.get('selectedOptions') == 'function') {
+            allBindingsAccessor.get('selectedOptions').subscribe(function (new_val) {
+                // Removing items which are not in new value
+                var values = $select.getValue();
+                var items_to_remove = [];
+                for (var k in values) {
+                    if (new_val.indexOf(values[k]) == -1) {
+                        items_to_remove.push(values[k]);
+                    }
+                }
+
+                for (var k in items_to_remove) {
+                    $select.removeItem(items_to_remove[k]);
+                }
+
+                for (var k in new_val) {
+                    $select.addItem(new_val[k]);
+                }
+
+            });
+            var selected = allBindingsAccessor.get('selectedOptions')();
+            for (var k in selected) {
+                $select.addItem(selected[k]);
+            }
+        }
+
+
+        if (typeof init_selectize == 'function') {
+            init_selectize($select);
+        }
+
+        if (typeof valueAccessor().subscribe == 'function') {
+            valueAccessor().subscribe(function (changes) {
+                // To avoid having duplicate keys, all delete operations will go first
+                var addedItems = new Array();
+                changes.forEach(function (change) {
+                    switch (change.status) {
+                        case 'added':
+                            addedItems.push(change.value);
+                            break;
+                        case 'deleted':
+                            var itemId = change.value[options.valueField];
+                            if (itemId != null) $select.removeOption(itemId);
+                    }
+                });
+                addedItems.forEach(function (item) {
+                    $select.addOption(item);
+                });
+
+            }, null, "arrayChange");
+        }
+		// Add new appended
+		var name = $(element).attr("name");
+		var add_name = "<p id='add_new_user'>Add " + name + "</p>";
+		var dropdown = $(element).parent().find(".selectize-dropdown");
+		dropdown.append(add_name);
+		// link to modal
+		var modal_link = $(element).parent().find("#add_new_user");
+		modal_link.attr("data-reveal-id", name);
+    },
+    update: function (element, valueAccessor, allBindingsAccessor) {
+
+        if (allBindingsAccessor.has('object')) {
+            var optionsValue = allBindingsAccessor.get('optionsValue') || 'id';
+            var value_accessor = valueAccessor();
+            var selected_obj = $.grep(value_accessor(), function (i) {
+                if (typeof i[optionsValue] == 'function')
+                    var id = i[optionsValue]
+                else
+                    var id = i[optionsValue]
+                return id == allBindingsAccessor.get('value')();
+            })[0];
+
+            if (selected_obj) {
+                allBindingsAccessor.get('object')(selected_obj);
+            }
+        }
+    }
+}
+</script>
+
+<script type="text/javascript">
+	$('#group_submit').click(function(e){
+		e.preventDefault();
+		var group_json_data = JSON.stringify($('.validatedGroupForm').serializeJSON(), null, 2);
+		$.ajax({
+			url: "/group/",
+			type: "POST",
+			// async: false,
+			contentType: "application/json",
+			dataType: 'json',
+			data: group_json_data,
+			error: function(XMLHttpRequest, textStatus, errorThrown) {
+ 				alert(xhr.responseText);
+     		},
+     		success: function(data){
+     			toggle.select_group.push([data]);
+
+     		},
+		});
+		$('#group_receivers').foundation('reveal', 'close');
+		return false;
 	});
+
+	$('#user_submit').click(function(e){
+		e.preventDefault();
+		var user_json_data = JSON.stringify($('.validatedUserForm').serializeJSON(), null, 2);
+		$.ajax({
+			url :"/users/",
+			type: "POST",
+			contentType: "application/json",
+			dataType: 'json',
+			data: user_json_data,
+			error: function(xhr, textStatus, errorThrown) {
+ 				alert(xhr.responseText);
+     		},
+     		success: function(data){
+     			toggle.select_user.push([data]);
+     		},
+		});
+		$('#user_receivers').foundation('reveal', 'close');
+		return false;
+	});	
+
+
+	$('#id_scheduled_time').datetimepicker({
+ 		format:'m/d/Y H:i:s',
+ 		minDate:'-2/01/1970',
+	});
+	
 	$('#id_date').datetimepicker({
 		timepicker:false,
- 		format:'m/d/Y'
+ 		format:'m/d/Y',
+ 		minDate:'-2/01/1970',
+
 	});
 
 	$('#id_scheduled_time_1').datetimepicker({
 		datepicker:false,
-		format:'H:i'
+		format:'H:i',
+		minTime: 0
 	});
+	
+	validateUserVM = function(){
+		var self = this;
+		self.confirm_msg = ko.observable();
+		self.password = ko.observable();
+		self.confirm_password = ko.observable()
+		self.submit_button = ko.computed(function(){
+			if ( self.password() == self.confirm_password()){
+				return true;
+			} else {
+				self.confirm_msg("Confirm your password to activate save")
+				return false;
+			}
 
-	$(document).ready(function(){
-		$('#id_user_receivers').selectize({
- 			plugins: ['remove_button']
-			});
+		})
+	};
 
-		$('#id_group_receivers').selectize({
- 			plugins: ['remove_button']
-			});
-	});	
 	Toggle = function(){
 		var self = this;
+		validate_user = validateUserVM;
 		self.tog = ko.observable(false);
+		self.select_user = ko.observableArray();
+		self.select_group = ko.observableArray();
 		self.change_button_value = ko.observable('Submit')
+		$.ajax({
+			url: '/users/.json',
+			type: 'GET',
+			dataType: 'json',
+			success: function(data){
+				self.select_user(data);
+			}
+		});
+		$.ajax({
+			url: '/group/.json',
+			type: 'GET',
+			dataType: 'json',
+			success: function(data){
+				self.select_group(data);
+			}
+		});
+
+		self.get_u_r = function(){
+			if (typeof e_msg === 'undefined') {
+				var data = null;
+                return data;
+			}
+			else {
+				obj = e_msg;
+				return obj.user_receiver;
+			};
+
+		};
+		self.get_g_r = function(){
+			if (typeof e_msg === 'undefined') {
+				var data =  null;
+                return data;
+			}
+			else {
+				obj = e_msg;
+				return obj.group_receiver;
+			};
+
+		 };
+
+		var q = self.get_u_r();
+		var r = self.get_g_r();
+		self.selected_item = ko.observableArray(q);
+		self.selected_item1 = ko.observableArray(r);
 		self.submit_save = function(data,event){
 			if(self.tog()==true){
 				self.change_button_value('Save');
@@ -128,12 +445,11 @@
 				console.log(event.target.checked); // log out the current state
        			console.log("1");
        			return true; 
-			}
+			};
 		};
 	};
 
 	toggle = new Toggle();
 	ko.applyBindings(toggle);
-
 </script>
 {% endblock %}
