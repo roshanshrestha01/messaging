@@ -146,7 +146,6 @@ ko.bindingHandlers.selectize = {
 		$.ajax({
 			url: "/group/",
 			type: "POST",
-			// async: false,
 			contentType: "application/json",
 			dataType: 'json',
 			data: group_json_data,
@@ -199,20 +198,7 @@ ko.bindingHandlers.selectize = {
  		format:'m/d/Y H:i:s',
  		minDate:'-2/01/1970',
 	});
-	
-	// $('#id_date').datetimepicker({
-	// 	timepicker:false,
- // 		format:'m/d/Y',
- // 		minDate:'-2/01/1970',
 
-	// });
-
-	// $('#id_scheduled_time_1').datetimepicker({
-	// 	datepicker:false,
-	// 	format:'H:i',
-	// 	minTime: 0
-	// });
-	
 	validateUserVM = function(){
 		var self = this;
 		self.confirm_msg = ko.observable();

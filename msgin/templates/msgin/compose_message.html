@@ -6,28 +6,9 @@
 	<link rel="stylesheet" href="{{ STATIC_URL }}js/dist/css/selectize.default.css" />
 	<link rel="stylesheet" href="{{ STATIC_URL }}js/dist/css/selectize.legacy.css" />
 	<link rel="stylesheet" href="{{ STATIC_URL }}js/dist/css/jquery.datetimepicker.css" />
-	<style>
-		#and_or {
-			margin-top: 25px;
-			color: #333;
-			font-size: 15px;
-			opacity: 0.5; 
-			font-family: Serif;;
-		}
-		#add_new_user{
-			text-align: center;
-			padding: 2px;
-			margin: auto 2px;
-			padding-top: 5px;
-		}
-		#add_new_user:hover{
-			background-color: #006ef5;
-			border-radius: 15px;
-			color: white;
-			padding-top: 5px;
+	<link rel="stylesheet" href="{{ STATIC_URL }}js/.css" />
+	<link rel="stylesheet" href="{{ STATIC_URL }}css/compose_message.css" />
 
-		}
-	</style>
 {% endblock %}
 
 {% block content %}
@@ -48,10 +29,6 @@
 		<div class = "small-2 column" style="margin-top: 25px;text-indent: 25px">
 			<h3 style="color: #333">And/Or</h3>
 		</div>
-		<!--div class = "small-1 column">
-			<p id="and_or">AND|OR</p>
-		</div-->
-
 		<div class = "small-5 column">
 			<label>{{ form.group_receivers.label }}:
 			{{ form.group_receivers }}

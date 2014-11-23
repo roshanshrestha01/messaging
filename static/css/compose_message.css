@@ -1,0 +1,22 @@
+
+#and_or {
+	margin-top: 25px;
+	color: #333;
+	font-size: 15px;
+	opacity: 0.5; 
+	font-family: Serif;;
+	}
+
+#add_new_user{
+	text-align: center;
+	padding: 2px;
+	margin: auto 2px;
+	padding-top: 5px;
+	}
+
+#add_new_user:hover{
+	background-color: #006ef5;
+	border-radius: 15px;
+	color: white;
+	padding-top: 5px;
+	}
