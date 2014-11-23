@@ -279,10 +279,19 @@ ko.bindingHandlers.selectize = {
 		var name = $(element).attr("name");
 		var add_name = "<p id='add_new_user'>Add " + name + "</p>";
 		var dropdown = $(element).parent().find(".selectize-dropdown");
+		var dropdown_content = $(element).parent().find(".selectize-dropdown-content");
 		dropdown.append(add_name);
 		// link to modal
 		var modal_link = $(element).parent().find("#add_new_user");
 		modal_link.attr("data-reveal-id", name);
+		//add new link
+		var select_input = $(element).parent().find(".selectize-input");
+
+		$(select_input).click(function(){
+			$(dropdown).css("display", "block")
+		});
+
+
     },
     update: function (element, valueAccessor, allBindingsAccessor) {
 
@@ -316,13 +325,18 @@ ko.bindingHandlers.selectize = {
 			contentType: "application/json",
 			dataType: 'json',
 			data: group_json_data,
-			error: function(XMLHttpRequest, textStatus, errorThrown) {
+			error: function(xhr, textStatus, errorThrown) {
  				alert(xhr.responseText);
      		},
      		success: function(data){
      			toggle.select_group.push([data]);
-
      		},
+     		complete: function(data){
+     			var $select = $('#id_group_receivers').selectize();
+     			var selectize = $select[0].selectize;
+     			selectize.addOption({value:data.responseJSON.id,text:data.responseJSON.name})
+     			selectize.addItem(data.responseJSON.id);
+     		}
 		});
 		$('#group_receivers').foundation('reveal', 'close');
 		return false;
@@ -343,6 +357,13 @@ ko.bindingHandlers.selectize = {
      		success: function(data){
      			toggle.select_user.push([data]);
      		},
+     		complete: function(data) {
+     			var $select = $('#id_user_receivers').selectize();
+     			var selectize = $select[0].selectize;
+     			selectize.addOption({value:data.responseJSON.id,text:data.responseJSON.username})
+     			selectize.addItem(data.responseJSON.id);
+
+     		}
 		});
 		$('#user_receivers').foundation('reveal', 'close');
 		return false;
@@ -354,18 +375,18 @@ ko.bindingHandlers.selectize = {
  		minDate:'-2/01/1970',
 	});
 	
-	$('#id_date').datetimepicker({
-		timepicker:false,
- 		format:'m/d/Y',
- 		minDate:'-2/01/1970',
+	// $('#id_date').datetimepicker({
+	// 	timepicker:false,
+ // 		format:'m/d/Y',
+ // 		minDate:'-2/01/1970',
 
-	});
+	// });
 
-	$('#id_scheduled_time_1').datetimepicker({
-		datepicker:false,
-		format:'H:i',
-		minTime: 0
-	});
+	// $('#id_scheduled_time_1').datetimepicker({
+	// 	datepicker:false,
+	// 	format:'H:i',
+	// 	minTime: 0
+	// });
 	
 	validateUserVM = function(){
 		var self = this;
