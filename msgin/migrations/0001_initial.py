@@ -18,11 +18,12 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('message_content', models.TextField()),
-                ('send_time', models.DateTimeField(null=True, verbose_name=b'scheduled date', blank=True)),
-                ('status', models.CharField(default=b'OUTBOX', max_length=6, choices=[(b'OUTBOX', b'Outbox'), (b'SEND', b'Send'), (b'SEEN', b'Received')])),
+                ('send_time', models.DateTimeField(null=True, verbose_name=b'Scheduled Date & Time', blank=True)),
+                ('status', models.CharField(max_length=6, choices=[(b'OUTBOX', b'Outbox'), (b'SEND', b'Send'), (b'SEEN', b'Received')])),
+                ('created_at', models.DateTimeField(verbose_name=b'Created At')),
                 ('group_receiver', models.ManyToManyField(to='auth.Group', null=True, blank=True)),
                 ('sender', models.ForeignKey(related_name=b'message_sender', to=settings.AUTH_USER_MODEL)),
-                ('user_recieiver', models.ManyToManyField(related_name=b'message_receiver', null=True, to=settings.AUTH_USER_MODEL, blank=True)),
+                ('user_receiver', models.ManyToManyField(related_name=b'message_receiver', null=True, to=settings.AUTH_USER_MODEL, blank=True)),
             ],
             options={
             },

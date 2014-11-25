@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block content %}
+{% load pagination_tags %}
+{% load sorting_tags %}
+
+{% autosort obj as sorted_obj %}
+{% autopaginate sorted_obj 5 as paginated_obj %}
+
+<div class="row">
+	<div class="small-12 column">
+		Sort By: {% anchor created_at 'Date'%} ::
+				{% anchor user_receiver 'To user:' %} ::
+
+		<hr/>
+		{% for o in paginated_obj %}
+			<label>From:
+				<a href="#">
+					{{ o.sender }}
+				</a>
+				<br/>
+				To:
+				{% for usr_receiver in o.user_receiver.all %}
+				<a href="/message/sent/usr/{{ usr_receiver.id }}">
+					{{ usr_receiver }}
+				</a>
+				{% endfor %}
+				Group:
+				{% for grp_receiver in o.group_receiver.all %}
+				<a href="/message/sent/grp/{{ grp_receiver.id }}">
+					{{ grp_receiver }}
+				</a>
+				{% endfor %}
+
+			</label>
+			<b>{{ o.message_content }}</b>
+			<hr/>
+		{% endfor %}
+		{% paginate %}
+	</div>
+</div>
+
+{% endblock %}
